@@ -1,0 +1,15 @@
+{
+  "name": "spec-translator",
+  "version": "1.0.0",
+  "description": "A utility for translating TEI Guidelines Specifications.",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "keywords": [
+    "TEI",
+    "translation"
+  ],
+  "author": "Hugh A. Cayless",
+  "license": "AGPL-3.0-or-later"
+}
