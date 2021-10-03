@@ -1,0 +1,7 @@
+{
+  "redirect": "https://translate.tei-c.org/auth",
+  "url": "https://tei-web-editor.herokuapp.com",
+  "scope": "repo",
+  "clientId": "f20bd2328bf5c3b06e90",
+  "clientSecret": "55edd7d058e644a847bb183274ee1cccd25e4296"
+}

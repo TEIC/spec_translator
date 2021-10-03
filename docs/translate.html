@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="css/guidelines.css" title="no title" charset="utf-8">
+    <link rel="stylesheet" href="css/codemirror.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
+    <script src="js/translator.js" charset="utf-8"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/codemirror.js"></script>
+    <script src="js/xml.js"></script>
+    <script>
+      const attstatus = {
+        "opt": "Optional",
+        "rec": "Recommended",
+        "req": "Required"
+      };
+      const codemirrors = [];
+      function toggleEdit(lang) {
+        document.querySelectorAll("cetei-translate").forEach(function(elt){
+          elt.parentNode.removeChild(elt);
+        });
+        document.querySelectorAll(".i18n").forEach(function(elt) {
+          elt.innerText = conv(elt.innerText, lang.substring(1));
+        });
+        document.querySelectorAll(".translatable").forEach(function(elt) {
+          if (!elt.matches("*[hidden] " + elt.localName)) {
+            let tr = document.createElement("cetei-translate");
+            let teiElt = teiParent(elt);
+            let langElt = teiElt.parentElement.querySelector(teiElt.parentElement.localName + '>' +teiElt.localName + "[lang=" + lang.substring(1) + "]");
+            if (!langElt) {
+              langElt = teiElt.cloneNode();
+              langElt.setAttribute("lang", lang.substring(1));
+              langElt.setAttribute("xml:lang", lang.substring(1));
+              langElt.setAttribute("versiondate", (new Date()).toISOString().substring(0,10))
+              langElt.removeAttribute("data-processed");
+              tr.appendChild(langElt);
+              teiElt.insertAdjacentElement('afterend',tr);
+            } else {
+              tr.appendChild(c.utilities.copyAndReset(langElt));
+              langElt.replaceWith(tr);
+            }
+          }
+        });
+        document.querySelectorAll("textarea.code").forEach(function(elt) {
+          codemirrors.push(CodeMirror.fromTextArea(elt, {
+            lineNumbers: true,
+            mode: {name: "xml", matchClosing: true}
+          }));
+        });
+      }
+    </script>
+    <script type="text/javascript">
+      let t = new Translator();
+      if (!t.loggedIn()) {
+        window.location = '/auth/login';
+      }
+      params = (new URL(window.location)).searchParams;
+      if (params.has("edit")) {
+        t.ct.getHTML5('https://raw.githubusercontent.com/TEIC/TEI/dev/P5/Source/Specs/' + params.get("edit") + '?new=' + Date.now(), function(data) {
+          document.querySelector(".content").replaceChildren(data);
+        });
+      }
+      
+    </script>
+    <style>
+      nav {
+        text-align: right;
+      }
+      div.content {
+        margin-left: auto;
+        margin-right: auto;
+        width: 80vw;
+      }
+      ul.languages {
+        margin-left: auto;
+        margin-right: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <ul class="nav d-flex justify-content-end">
+        <li class="nav-item">
+          <a class="nav-link" href="/">Browse</a>
+        </li>
+        <li class="nav-item" id="user">
+          <a class="nav-link" href="/user.html" id="userlink"></a>
+        </li>
+      </ul>
+    </nav>
+    <ul class="nav languages">
+      <li class="nav-item">Click to translate:</li>
+      <li class="nav-item">[<a href="#de">Deutsch</a>]</li>
+      <li class="nav-item">[<a href="#es">Español</a>]</li>
+      <li class="nav-item">[<a href="#fr">Français</a>]</li>
+      <li class="nav-item">[<a href="#it">Italiano</a>]</li>
+      <li class="nav-item">[<a href="#ja">日本語</a>]</li>
+      <li class="nav-item">[<a href="#ko">한국어</a>]</li>
+      <li class="nav-item">[<a href="#zh-TW">中文</a>]</li>
+    </ul>  
+    <div class="content">
+      
+    </div>
+    <script>
+      document.querySelectorAll(".languages a").forEach(function(elt){
+        elt.addEventListener('click', function(event) {
+          toggleEdit(elt.getAttribute("href"));
+          return false;
+        });
+      });  
+      document.getElementById("userlink").innerHTML = window.sessionStorage.getItem("user");
+    </script>
+  </body>
+</html>

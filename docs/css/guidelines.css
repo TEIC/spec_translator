@@ -1,0 +1,87 @@
+cetei-translate>tei-gloss {
+  display: inline;
+}
+cetei-translate>tei-desc {
+  display: inline;
+}
+cetei-translate>tei-remarks {
+  display: inline;
+}
+cetei-translate.exemplum {
+  display: block;
+  width: 40em;
+}
+cetei-translate.exemplum textarea {
+  height: 15em;
+}
+tei-att::before {
+  content: '@';
+}
+tei-att {
+  font-family: 'Courier New', Courier, monospace;
+}
+tei-elementspec {
+  display: block;
+}
+tei-gloss {
+  display: none;
+}
+tei-gloss[lang=en] {
+  display: inline;
+}
+tei-desc {
+  display: none;
+}
+tei-desc[lang=en] {
+  display: inline;
+}
+tei-remarks {
+  display: none;
+}
+tei-remarks[lang=en] {
+  display: inline;
+}
+tei-gi::before {
+  content: '<';
+}
+tei-gi::after {
+  content: '>';
+}
+tei-gi {
+  font-family: 'Courier New', Courier, monospace;
+}
+pre {
+  font-family: "Noto Mono", Consolas, monospace;
+}
+body {
+  margin: 50px;
+}
+dl {
+  display: grid;
+  grid-template-columns: 1fr 9fr;
+  grid-auto-flow: row;
+}
+dt {
+  font-weight: bold;
+  grid-column: 1;
+}
+dd {
+  grid-column: 2;
+  list-style-type: none;
+}
+nav {
+  font-family: 'Noto Sans', Verdana, Geneva, Tahoma, sans-serif;
+}
+summary {
+  display: inline;
+}
+summary::before {
+  content: "(";
+}
+summary::after {
+  content: ")";
+}
+textarea {
+  width: 100%;
+  height: 4em;
+}

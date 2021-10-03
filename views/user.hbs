@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{title}}</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script src="/js/translator.js"></script>
+  </head>
+  <body>
+    <p>Redirecting to user page...</p>
+    <script>
+      window.sessionStorage.setItem('token', '{{token}}');
+      let t = new Translator();
+      t.getUser().then(user => {
+        window.sessionStorage.setItem('user', user.login);
+        window.location = '/user.html';
+      });
+    </script>
+  </body>
+</html>

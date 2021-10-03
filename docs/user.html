@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spec Translator: User</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
+    <script src="js/translator.js" charset="utf-8"></script>
+    <style>
+      ol>li {
+        margin-top: 1em;;
+      }
+    </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <ul class="nav d-flex justify-content-end">
+      <li class="nav-item">
+        <a class="nav-link" href="/">Browse</a>
+      </li>
+    </ul>
+  </nav>
+  <ol>
+    <li class="container">
+      <p>Choose or create a repository to save to:</p>
+      <form action="" class="row g-3">
+        <div class="col-auto">
+          <input class="form-control" name="owner" type="text" id="owner">
+          <div class="form-text" id="ownertext"></div>
+        </div>
+        <div class="col-auto" style="font-size: 2em; line-height: 30px;"> / </div>
+        <div class="col-auto"><input class="form-control" list="TEIRepos" id="TEIRepository" placeholder="repository name..." autocomplete="off">
+          <div class="form-text" id="repotext"></div>
+          <datalist id="TEIRepos">
+          </datalist>
+        </div>
+        <div class="col-auto" style="font-size: 2em; line-height: 30px;">or</div>
+        <div class="col-auto"><button type="submit" class="btn btn-primary" id="createFork">Create a Fork</button></div>
+      </form>
+    </li>
+    <li class="container">
+      <p>Choose or create a branch to save to:</p>
+      <form action="" class="row g-3">
+        <div class="col-auto" style="font-size: 2em; line-height: 30px;;">
+          <span id="owner2">owner</span> / <span id="TEIRepository2">repository</span> /
+        </div>
+        <div class="col-auto">
+          <input class="form-control" name="branch" list="branches" id="branch" placeholder="branch..." disabled autocomplete="off">
+          <div class="form-text" id="branchtext"></div>
+          <datalist id="branches">
+          </datalist>
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-primary" id="createBranch" disabled>Create a Branch</button>
+        </div>
+      </form>
+      <div></div>
+    </li>
+    <li class="container"><a href="browse.html">Choose a TEI page to translate</a> <span id="rememberedpage"></span></li>
+  </ol>
+  
+  <script>
+    let t = new Translator({noCETEI: true});
+    if (!t.loggedIn()) {
+      window.location = '/auth/login';
+    }
+    function checkRepo(owner, repo) {
+      t.getCollaborators(owner, repo).then(data => {
+          if (data.message) {
+            document.getElementById("repotext").innerHTML = 'Repository not found. Click Create to create one';
+            document.getElementById('createFork').removeAttribute('disabled');
+          } else {
+            if (data.filter(c => c.login == window.sessionStorage.getItem("user") && c.permissions.push === true).length == 0) {
+              document.getElementById("repotext").innerHTML = "You don't have 'push' rights to the repo.";
+            } else {
+              setupBranches(owner, repo);
+            }
+          }
+        });
+    }
+    function setupBranches(owner, repo) {
+      t.getUniqueRepoBranches(owner, repo).then(data => {
+          document.getElementById("branches").innerHTML = '';
+          data.forEach(branch => {
+            let opt = document.createElement('option');
+            opt.setAttribute('value', branch.name);
+            opt.innerHTML = branch.name;
+            document.getElementById("branches").appendChild(opt);
+          });
+          document.getElementById('branch').removeAttribute('disabled');
+        });
+    }
+    // Set up owner info
+    let owner = window.sessionStorage.getItem("user");
+    let repo;
+    window.sessionStorage.setItem('owner', owner);
+    window.sessionStorage.setItem('ownerType', 'user');
+    document.getElementById('owner').value = owner;
+    document.getElementById('owner2').innerHTML = owner;
+    document.getElementById('owner').addEventListener('change', ev => {
+      if (ev.target.value == '') {
+        ev.target.value = owner;
+        return;
+      }
+      t.checkOwner(ev.target.value).then(result => {
+        if (result) {
+          owner = ev.target.value;
+          window.sessionStorage.setItem('owner', owner);
+          window.sessionStorage.setItem('ownerType', result);
+          document.getElementById("owner2").innerHTML = owner;
+          document.getElementById("ownertext").innerHTML = '';
+          if (repo) {
+            checkRepo(owner, repo);
+          }
+        } else {
+          document.getElementById("ownertext").innerHTML = "This owner does not exist.";
+        }
+        
+      });
+    });
+    // Set up repo info
+    t.getTEIRepos(owner).then(repositories => {
+        repositories.forEach(repository => {
+          let opt = document.createElement("option");
+          opt.setAttribute("value", repository.name);
+          opt.innerHTML = repository.name;
+          document.getElementById("TEIRepos").appendChild(opt);
+        });
+        if (repositories.length > 0) {
+          repo = repositories[0].name;
+          window.sessionStorage.setItem('repo', repo);
+          document.getElementById("TEIRepository").value = repositories[0].name;
+          document.getElementById("TEIRepository2").innerHTML = repo;
+          setupBranches(owner, repo);
+        }
+    });
+    document.getElementById("TEIRepository").addEventListener('change', ev => {
+      document.getElementById('createFork').setAttribute('disabled','');
+      if (ev.target.value != '') {
+        repo = ev.target.value;
+        window.sessionStorage.setItem('repo', repo);
+        checkRepo(owner, repo);
+        document.getElementById("TEIRepository2").innerHTML = repo;
+      } 
+    });
+    document.getElementById("createFork").addEventListener('click', ev => {
+      t.forkTEIRepo(window.sessionStorage.getItem('ownertype') == 'organization' ? owner : null);
+      return false;
+    });
+    // Set up branches
+    document.getElementById("branch").addEventListener('change', ev => {
+      if (ev.target.value != '') {
+        t.getBranch(owner, repo, ev.target.value).then(data => {
+          if (data.message) {
+            document.getElementById('createBranch').removeAttribute('disabled');
+            document.getElementById('branchtext').innerHTML = "Branch does not exist. Click 'Create a Branch'";
+          } else {
+            window.sessionStorage.setItem('branch', data.name);
+            window.sessionStorage.setItem('head', data.commit.sha);
+            document.getElementById('createBranch').setAttribute('disabled','');
+          }
+        });
+      } else {
+        document.getElementById('createBranch').setAttribute('disabled','');
+      }
+    });
+    document.getElementById('createBranch').addEventListener('click', ev => {
+      let branch = document.getElementById("branch").value;
+      if (branch) {
+        t.getBranch(owner, repo, 'dev').then(data => {
+          if (!data.message) {
+            t.createRef(owner, repo, branch, data.commit.sha).then(ref => {
+              window.sessionStorage.setItem('head', ref.object.sha);
+              let opt = document.createElement('option');
+              opt.setAttribute('value', window.sessionStorage.getItem('branch'));
+              opt.innerHTML = window.sessionStorage.getItem('branch');
+              document.getElementById('branches').appendChild(opt);
+            });
+          } else {
+            document.getElementById('branchtext').innerHTML = `Could not create branch ${branch}`; 
+          }
+        });
+      }
+      return false;
+    });
+  </script>
+</body>
+</html>
