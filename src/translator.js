@@ -7,7 +7,6 @@ class Translator {
       this.ct = new CETEI();
       this.ct.addBehaviors(Translator.behaviors);
     }
-
   }
   loggedIn() {
     return window.sessionStorage.getItem("user");
@@ -18,8 +17,7 @@ class Translator {
         'Accept': 'application/vnd.github.v3+json',
         'Authorization': 'token ' + window.sessionStorage.getItem('token')
       }});
-    const json = await response.json();
-    return json;
+    return response.json();
   }
   async userExists(login) {
     try {
@@ -27,13 +25,12 @@ class Translator {
         { headers: {
           'Accept': 'application/vnd.github.v3+json',
         }});
-      const json = await response.json();
+      const json = response.json();
       return json.login;
     }
     catch(error) {
       return null;
     }
-    
   }
   async orgExists(login) {
     try {
@@ -41,7 +38,7 @@ class Translator {
         { headers: {
           'Accept': 'application/vnd.github.v3+json',
         }});
-      const json = await response.json();
+      const json = response.json();
       return json.login;
     }
     catch(error) {
@@ -67,8 +64,7 @@ class Translator {
       },
       body: `{	"query": "query {repositoryOwner(login:\\"${owner}\\") {repositories(first: 100, isFork: true${page}) {pageInfo {startCursor, hasNextPage, endCursor}, totalCount,nodes {name parent {nameWithOwner}}}}}"}`
     });
-    const json = await response.json();
-    return json;
+    return response.json();
   }
   async getBranch(owner, repo, branch) {
     const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/branches/${branch}`,
@@ -76,10 +72,11 @@ class Translator {
         'Accept': 'application/vnd.github.v3+json',
         'Authorization': 'token ' + window.sessionStorage.getItem('token'),
       }});
-    const json = await response.json();
-    return json;
+    return response.json();
   }
-  async createRef(owner, repo, ref, sha) {
+  async createRef(ref, sha) {
+    const owner = window.sessionStorage.getItem('owner');
+    const repo = window.sessionStorage.getItem('repo');
     const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/refs`, {
       method: 'POST',
       headers: {
@@ -88,8 +85,20 @@ class Translator {
       },
       body: `{"ref":"refs/heads/${ref}", "sha":"${sha}"}`
     });
-    const json = await response.json();
-    return json;
+    return response.json();
+  }
+  async updateRef(ref, sha) {
+    const owner = window.sessionStorage.getItem('owner');
+    const repo = window.sessionStorage.getItem('repo');
+    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/refs/heads/${ref}`, {
+      method: 'PATCH',
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': 'token ' + window.sessionStorage.getItem('token'),
+      },
+      body: `{"sha":"${sha}"}`
+    });
+    return response.json();
   }
   async getCollaborators(owner, repo) {
     const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/collaborators`,
@@ -97,8 +106,7 @@ class Translator {
         'Accept': 'application/vnd.github.v3+json',
         'Authorization': 'token ' + window.sessionStorage.getItem('token'),
       }});
-    const json = await response.json();
-    return json;
+      return response.json();
   }
   async forkTEIRepo(organization) {
     const body = organization ? `"organization": "${organization}"` : '';
@@ -110,8 +118,7 @@ class Translator {
       },
       body: `{${body}}`
     });
-    const json = await response.json();
-    return json;
+    return response.json();
   }
   async getBranches(owner, repo) {
     const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/branches`,
@@ -119,8 +126,7 @@ class Translator {
         'Accept': 'application/vnd.github.v3+json',
         'Authorization': 'token ' + window.sessionStorage.getItem('token')
       }});
-    const json = await response.json();
-    return json;
+    return response.json();
   }
   getUniqueRepoBranches(owner, repo) {
     const result = this.getBranches('TEIC','TEI').then(TEIBranches => {
@@ -148,9 +154,127 @@ class Translator {
       headers: {
         'Authorization': 'token ' + window.sessionStorage.getItem('token')
     }});
-    const json = await response.json();
-    return json;
+    return response.json();
   }
+  async createBlob(blob) {
+    const owner = window.sessionStorage.getItem('owner');
+    const repo = window.sessionStorage.getItem('repo');
+    try {
+      const response = await(fetch(`https://api.github.com/repos/${owner}/${repo}/git/blobs`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+          'Authorization': 'token ' + window.sessionStorage.getItem('token')
+        },
+        body: `{"content":${JSON.stringify(blob)}, "encoding":"utf-8"}`
+      }));
+      return response.json();
+    } catch (e) {
+      console.log(e);
+      return {message: "Exception thrown"};
+    }
+  }
+  async getCommit(owner, repo, sha) {
+    const response = await(fetch(`https://api.github.com/repos/${owner}/${repo}/git/commits/${sha}`, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': 'token ' + window.sessionStorage.getItem('token')
+      }
+    }));
+    return response.json();
+  }
+  async getTree(owner, repo, sha) {
+    const response = await(fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${sha}?recursive=true`, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': 'token ' + window.sessionStorage.getItem('token')
+      }
+    }));
+    return response.json();
+  }
+  async createTree(base, path, sha, blob) {
+    const owner = window.sessionStorage.getItem('owner');
+    const repo = window.sessionStorage.getItem('repo');
+    const mode = blob ? '100644' : '040000';
+    const type = blob ? 'blob' : 'tree';
+    try {
+      const response = await(fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+          'Authorization': 'token ' + window.sessionStorage.getItem('token')
+        },
+        body: `{"tree":[{"path":"${path}", "mode":"${mode}", "type":"${type}", "sha":"${sha}"}], "base_tree":"${base}"}`
+      }));
+      return response.json();
+    } catch (e) {
+      console.log(e);
+      return {message: "Exception thrown"};
+    }
+  }
+  async createCommit(message, tree, parent) {
+    const owner = window.sessionStorage.getItem('owner');
+    const repo = window.sessionStorage.getItem('repo');
+    try {
+      const response = await(fetch(`https://api.github.com/repos/${owner}/${repo}/git/commits`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+          'Authorization': 'token ' + window.sessionStorage.getItem('token')
+        },
+        body: `{"message":"${message}", "tree":"${tree}", "parents":["${parent}"]}`
+      }));
+      return response.json();
+    } catch (e) {
+      console.log(e);
+      return {message: "Exception thrown"};
+    }
+  }
+  async commit(path, content, message) {
+    const owner = window.sessionStorage.getItem('owner');
+    const repo = window.sessionStorage.getItem('repo');
+    const branchname = window.sessionStorage.getItem('branch');
+    // Get HEAD of current branch
+    const branch = await this.getBranch(owner, repo, branchname);
+    // Get its commit -> head
+    const head = branch.commit.sha;
+    // save the content createBlob() -> blob_sha
+    const blob = await this.createBlob(content);
+    // get the full tree listing for head.tree
+    const trees = await this.getTree(owner, repo, branch.commit.commit.tree.sha);
+    // get the tree for the new blob's path -> old_blob_tree_sha
+    const old_specs_sha = trees.tree.find(tree => tree.path == 'P5/Source/Specs').sha;
+    // create a new tree for the blob -> P5_Source_Specs_sha
+    const new_specs = await this.createTree(old_specs_sha, path, blob.sha, true);
+    // get the tree sha for P5/Source -> old_P5_Source_sha
+    const old_source_sha = trees.tree.find(tree => tree.path == 'P5/Source').sha;
+    // create a new tree for P5/Source -> P5_Source_sha
+    const new_source = await this.createTree(old_source_sha, 'Specs', new_specs.sha, false);
+    // get the tree sha for P5 -> old_P5_sha
+    const old_p5_sha = trees.tree.find(tree => tree.path == 'P5').sha;
+    // create a new tree for P5 -> P5_sha
+    const new_p5 = await this.createTree(old_p5_sha, 'Source', new_source.sha, false);
+    const new_tree = await this.createTree(branch.commit.commit.tree.sha, 'P5', new_p5.sha, false);
+    // create new commit (parents:[head], message, tree:P5_sha) -> new_head
+    const new_head = await this.createCommit(message, new_tree.sha, head);
+    // update branch ref to new_head
+    return await this.updateRef(branchname, new_head.sha);
+  }
+  async createPullRequest(message) {
+    const owner = window.sessionStorage.getItem('owner');
+    const repo = window.sessionStorage.getItem('repo');
+    const branch = window.sessionStorage.getItem('branch');
+    const response = await(fetch(`https://api.github.com/repos/${owner}/${repo}/pulls`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': 'token ' + window.sessionStorage.getItem('token')
+      },
+      body: `{"head":"${owner}:${branch}", "base":"dev", "body":"${message}"}`
+    }));
+    return response.json();
+  }
+
 
   conv(key, lang="en") {
     if (i18n.entries[key] && i18n.entries[key][lang]) {
@@ -166,7 +290,7 @@ class Translator {
     return elt;
   }
   teiParents(elt, acc = []) {
-    let parent = elt && elt.parentElement ? teiParent(elt.parentElement) : null;
+    let parent = elt && elt.parentElement ? this.teiParent(elt.parentElement) : null;
     if (parent) {
       acc.push(parent);
       return this.teiParents(parent, acc);
@@ -210,21 +334,21 @@ class Translator {
   }
   updateSource(doc, elt) {
     let xpath = this.getTEIXPath(elt);
-    let result = doc.evaluate(xpath, doc, resolveNS, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+    let result = doc.evaluate(xpath, doc, this.resolveNS, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
     if (result.singleNodeValue) {
       result.singleNodeValue.innerHTML = elt.value;
       result.singleNodeValue.setAttribute('versionDate', (new Date()).toISOString().substring(0,10));
     } else {
       xpath = xpath.replace(/@xml:lang='(..)'/, "@xml:lang='en'");
-      result = doc.evaluate(xpath, doc, resolveNS, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+      result = doc.evaluate(xpath, doc, this.resolveNS, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
       let enElt = result.singleNodeValue;
       // match indent level of the translated element, if any
       if (enElt.previousSibling.nodeType === Node.TEXT_NODE) {
         let ws = enElt.previousSibling.nodeValue.replace(/.*(\w+)$/, "$1");
-        enElt.insertAdjacentElement('afterend', toTEI(doc, teiParent(elt)))
+        enElt.insertAdjacentElement('afterend', this.toTEI(doc, this.teiParent(elt)))
           .insertAdjacentText('beforebegin', ws);
       } else {
-        enElt.insertAdjacentElement('afterend', toTEI(doc, teiParent(elt)));
+        enElt.insertAdjacentElement('afterend', this.toTEI(doc, this.teiParent(elt)));
       }          
     }
     return doc;
@@ -235,10 +359,9 @@ class Translator {
       this.updateSource(this.ct.XML_dom, text);
     });
   }
-  
-  
-  normalize(str) {
-    return str.replace(/^( |\t)+/gm, "");
+  content() {
+    const s = new XMLSerializer();
+    return s.serializeToString(this.ct.XML_dom);
   }
 
   static behaviors = {
@@ -320,7 +443,7 @@ class Translator {
       "desc": [
         ["cetei-translate>tei-desc", function(elt){
           let result = document.createElement("form");
-          result.innerHTML = "<textarea class=\"translate\">" + normalize(this.serialize(elt, true)) + "</textarea>";
+          result.innerHTML = "<textarea class=\"translate\">" + this.serialize(elt, true).replace(/^( |\t)+/gm, "") + "</textarea>";
           return result;
         }],
         ["*[lang=en]", ["<span class=\"translatable\">","</span>"]]
@@ -365,7 +488,7 @@ class Translator {
       "gloss": [
         ["cetei-translate>tei-gloss", function(elt){
           let result = document.createElement("form");
-          result.innerHTML = "<textarea class=\"translate\">" + normalize(this.serialize(elt, true)) + "</textarea>";
+          result.innerHTML = "<textarea class=\"translate\">" + this.serialize(elt, true).replace(/^( |\t)+/gm, "") + "</textarea>";
           return result;
         }],
         ["*[lang=en]", ["<summary class=\"translatable\">", "</summary> "]]
@@ -373,7 +496,7 @@ class Translator {
       "remarks": [
         ["cetei-translate>tei-remarks", function(elt){
           let result = document.createElement("form");
-          result.innerHTML = "<textarea class=\"code translate\">" + normalize(this.serialize(elt, true)) + "</textarea>";
+          result.innerHTML = "<textarea class=\"code translate\">" + this.serialize(elt, true).replace(/^( |\t)+/gm, "") + "</textarea>";
           return result;
         } ],
         ["*[lang=en]", function(elt) {

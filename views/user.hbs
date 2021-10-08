@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>{{title}}</title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
     <script src="/js/translator.js"></script>
   </head>
   <body>
@@ -10,7 +9,7 @@
     <script>
       window.sessionStorage.setItem('token', '{{token}}');
       let t = new Translator();
-      t.getUser().then(user => {
+      t.getCurrentUser().then(user => {
         window.sessionStorage.setItem('user', user.login);
         window.location = '/user.html';
       });
