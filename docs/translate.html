@@ -23,7 +23,10 @@
           elt.parentNode.removeChild(elt);
         });
         document.querySelectorAll(".i18n").forEach(function(elt) {
-          elt.innerText = t.conv(elt.innerText, lang.substring(1));
+          if (!elt.hasAttribute('data-key')) {
+            elt.setAttribute('data-key', elt.innerText);
+          }
+          elt.innerText = t.conv(elt.getAttribute('data-key'), lang.substring(1));
         });
         document.querySelectorAll(".translatable").forEach(function(elt) {
           if (!elt.matches("*[hidden] " + elt.localName)) {
@@ -92,8 +95,11 @@
     </style>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #2277bb;">
+      <div class="container-fluid justify-content-start">
+        <a href="https://tei-c.org" class="navbar-brand">
+          <img src="css/TEI-logo.png" alt="TEI" height="50">
+        </a>
         <ul class="navbar-nav">
           <li class="nav-item">
             <a class="nav-link" href="/">Browse</a>
@@ -103,14 +109,15 @@
           </li>
           <li class="nav-item" id="save">
             <form onsubmit="return false">
-              <button type="submit" class="btn btn-outline-primary ms-2" id="commit" disabled>Save</button>
+              <button type="submit" class="btn btn-outline-light ms-2" id="commit" disabled>Save</button>
             </form>
           </li>
           <li class="nav-item" id="pr">
             <form onsubmit="return false">
-              <button type="submit" class="btn btn-outline-primary ms-3" id="createpr" disabled>Submit Your Work</button>
+              <button type="submit" class="btn btn-outline-light ms-3" id="createpr" disabled>Submit Your Work</button>
             </form>
           </li>
+          <li class="nav-item" id="visitpr"></li>
         </ul>
       </div>
 
@@ -144,11 +151,11 @@
         t.saveToXML(codemirrors);
         try {
           t.commit(params.get('edit'),t.content(),`Saving ${params.get('edit')}`).then(commit => {
-            if (!data.message) {
+            if (!commit.message) {
               window.sessionStorage.setItem('head', commit.sha);
               ev.target.innerHTML = 'Save';
               ev.target.setAttribute('disabled','');
-              document.getElementById('createpr').removeAttribute('disabled');
+              window.location.reload();
             } else {
               console.log(data.message);
             }
@@ -160,15 +167,27 @@
         }
       });
       // Set up Submit button
-      t.getBranch(owner, repo, branch).then(branch => {
-        t.getBranch(owner, repo, 'dev').then(dev => {
-          if (dev.commit.sha != branch.commit.sha) {
-            document.getElementById('createpr').removeAttribute('disabled');
+      document.getElementById('createpr').addEventListener('click', ev => {
+        ev.target.innerHTML = 'Submitting...';
+        ev.target.setAttribute('disabled','');
+        t.createPullRequest(`Translation from ${owner}/${repo}`).then(pr => {
+          if (!pr.message) {
+            ev.target.innerHTML = "Submit Your Work"
           }
         });
       });
-      document.getElementById('createpr').addEventListener('click', ev => {
-        t.createPullRequest(`Translation from ${owner}/${repo}`);
+      t.getBranch(owner, repo, branch).then(br => {
+        t.getBranch(owner, repo, 'dev').then(dev => {
+          if (dev.commit.sha != br.commit.sha) {
+            t.getPRForBranch(owner, branch).then(prs => {
+              if (prs.length > 0) {
+                document.getElementById('visitpr').innerHTML = `<a class="nav-link" href="https://github.com/TEIC/TEI/pull/${prs[0].number}">Pull Request on GitHub</a>`;
+              } else {
+                document.getElementById('createpr').removeAttribute('disabled');
+              }
+            });
+          }
+        });
       });
     </script>
   </body>

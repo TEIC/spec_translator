@@ -20,41 +20,43 @@ class Translator {
     return response.json();
   }
   async userExists(login) {
-    try {
-      const response = await fetch(`https://api.github.com/users/${login}`,
-        { headers: {
-          'Accept': 'application/vnd.github.v3+json',
-        }});
-      const json = response.json();
-      return json.login;
-    }
-    catch(error) {
-      return null;
-    }
+    const response = await fetch(`https://api.github.com/users/${login}`,
+      { headers: {
+        'Accept': 'application/vnd.github.v3+json',
+      }});
+    return response.json();
   }
   async orgExists(login) {
-    try {
-      const response = await fetch(`https://api.github.com/orgs/${login}`,
-        { headers: {
-          'Accept': 'application/vnd.github.v3+json',
-        }});
-      const json = response.json();
-      return json.login;
-    }
-    catch(error) {
-      return null;
-    }
+    const response = await fetch(`https://api.github.com/orgs/${login}`,
+      { headers: {
+        'Accept': 'application/vnd.github.v3+json',
+      }});
+    return response.json();
   }
   async checkOwner(owner) {
+    const isOrg = await this.orgExists(owner);
+    if (isOrg.login) {
+      const member = await this.checkMembership(window.sessionStorage.getItem('user'), owner);
+      if (member) {
+        return 'organization';
+      } else {
+        return false;
+      }
+    }
     const isUser = await this.userExists(owner);
-    if (isUser) {
+    if (isUser.login) {
       return 'user';
     }
-    const isOrg = await this.orgExists(owner);
-    if (isOrg) {
-      return 'organization';
-    }
     return false;
+  }
+  async checkMembership(user, org) {
+    const response = await fetch(`https://api.github.com/orgs/${org}/members/${user}`, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': 'token ' + window.sessionStorage.getItem('token')
+      }
+    });
+    return response.status == 204;
   }
   async getRepos(owner, page) {
     const response = await fetch('https://api.github.com/graphql', { 
@@ -120,6 +122,17 @@ class Translator {
     });
     return response.json();
   }
+  async mergeUpstream(owner, repo) {
+    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/merge-upstream`,
+      { method: 'POST',
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+          'Authorization': 'token ' + window.sessionStorage.getItem('token')
+        },
+        body: '{"branch":"dev"}'
+      });
+    return response.json();
+  }
   async getBranches(owner, repo) {
     const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/branches`,
       { headers: {
@@ -128,6 +141,7 @@ class Translator {
       }});
     return response.json();
   }
+  // Get branches that do not match branch names in TEIC/TEI
   getUniqueRepoBranches(owner, repo) {
     const result = this.getBranches('TEIC','TEI').then(TEIBranches => {
       const names = TEIBranches.map(b => b.name);
@@ -138,13 +152,13 @@ class Translator {
     });
     return result;
   }
-  async getTEIRepos(owner, acc = [], page = '') {
+  async getTEIRepo(owner, acc = [], page = '') {
     const json = await this.getRepos(owner, page);
     acc.push(...json.data.repositoryOwner.repositories.nodes.filter(repo => repo.parent.nameWithOwner == 'TEIC/TEI'));
     if (json.data.repositoryOwner.repositories.pageInfo.hasNextPage) {
-      return this.geTEIRepos(acc, `,after:"${json.data.repositoryOwner.repositories.pageInfo.endCursor}")`);
+      return this.geTEIRepo(owner, acc, `,after:"${json.data.repositoryOwner.repositories.pageInfo.endCursor}")`);
     } else {
-      return acc;
+      return acc[0];
     }
   }
   async verifyTEIRepo(owner, name) {
@@ -156,6 +170,16 @@ class Translator {
     }});
     return response.json();
   }
+  async getPRForBranch(owner, branch) {
+    const response = await fetch(`https://api.github.com/repos/TEIC/TEI/pulls?head=${owner}:${branch}`,
+      { headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': 'token ' + window.sessionStorage.getItem('token')
+      }});
+    return response.json();
+  }
+
+  // COMMITS
   async createBlob(blob) {
     const owner = window.sessionStorage.getItem('owner');
     const repo = window.sessionStorage.getItem('repo');
@@ -262,15 +286,14 @@ class Translator {
   }
   async createPullRequest(message) {
     const owner = window.sessionStorage.getItem('owner');
-    const repo = window.sessionStorage.getItem('repo');
     const branch = window.sessionStorage.getItem('branch');
-    const response = await(fetch(`https://api.github.com/repos/${owner}/${repo}/pulls`, {
+    const response = await(fetch(`https://api.github.com/repos/TEIC/TEI/pulls`, {
       method: 'POST',
       headers: {
         'Accept': 'application/vnd.github.v3+json',
         'Authorization': 'token ' + window.sessionStorage.getItem('token')
       },
-      body: `{"head":"${owner}:${branch}", "base":"dev", "body":"${message}"}`
+      body: `{"head":"${owner}:${branch}", "base":"dev", "title":"${message}"}`
     }));
     return response.json();
   }

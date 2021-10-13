@@ -16,34 +16,34 @@
     </style>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <ul class="nav d-flex justify-content-end">
-      <li class="nav-item">
-        <a class="nav-link" href="/">Browse</a>
-      </li>
-    </ul>
+  <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #2277bb;">
+    <div class="container-fluid justify-content-start">
+      <a href="https://tei-c.org" class="navbar-brand">
+        <img src="css/TEI-logo.png" alt="TEI" height="50">
+      </a>
+      <ul class="navbar-nav d-flex justify-content-end">
+        <li class="nav-item">
+          <a class="nav-link" href="/">Browse</a>
+        </li>
+      </ul>
+    </div>
+    
   </nav>
   <ol>
     <li class="container">
       <p>Choose or create a repository to save to:</p>
-      <form action="" class="row g-3">
+      <form onsubmit="return false" class="row g-3">
         <div class="col-auto">
           <input class="form-control" name="owner" type="text" id="owner">
           <div class="form-text" id="ownertext"></div>
         </div>
-        <div class="col-auto" style="font-size: 2em; line-height: 30px;"> / </div>
-        <div class="col-auto"><input class="form-control" list="TEIRepos" id="TEIRepository" placeholder="repository name..." autocomplete="off">
-          <div class="form-text" id="repotext"></div>
-          <datalist id="TEIRepos">
-          </datalist>
-        </div>
-        <div class="col-auto" style="font-size: 2em; line-height: 30px;">or</div>
-        <div class="col-auto"><button type="submit" class="btn btn-primary" id="createFork">Create a Fork</button></div>
+        <div class="col-auto" style="font-size: 2em; line-height: 30px;"> / <span id="TEIRepository" style="color: darkgray;">no repository</span></div>
+        <div class="col-auto"><button type="submit" class="btn btn-primary" id="createFork" disabled>Create a Fork</button></div>
       </form>
     </li>
     <li class="container">
       <p>Choose or create a branch to save to:</p>
-      <form action="" class="row g-3">
+      <form onsubmit="return false" class="row g-3">
         <div class="col-auto" style="font-size: 2em; line-height: 30px;;">
           <span id="owner2">owner</span> / <span id="TEIRepository2">repository</span> /
         </div>
@@ -70,18 +70,24 @@
     function checkRepo(owner, repo) {
       t.getCollaborators(owner, repo).then(data => {
           if (data.message) {
-            document.getElementById("repotext").innerHTML = 'Repository not found. Click Create to create one';
+            document.getElementById("TEIRepository").innerHTML = 'no repository';
             document.getElementById('createFork').removeAttribute('disabled');
           } else {
             if (data.filter(c => c.login == window.sessionStorage.getItem("user") && c.permissions.push === true).length == 0) {
-              document.getElementById("repotext").innerHTML = "You don't have 'push' rights to the repo.";
+              with (document.getElementById("TEIRepository")) {
+                innerHTML = "You can't save to this repo.";
+                setAttribute('style', 'color: red');
+              }
             } else {
+              document.getElementById("TEIRepository").removeAttribute('style');
               setupBranches(owner, repo);
             }
           }
         });
     }
     function setupBranches(owner, repo) {
+      document.getElementById("branch").value = '';
+      document.getElementById("branches").innerHTML = '';
       t.getUniqueRepoBranches(owner, repo).then(data => {
           document.getElementById("branches").innerHTML = '';
           data.forEach(branch => {
@@ -96,11 +102,43 @@
           document.getElementById('branch').removeAttribute('disabled');
         });
     }
+    function setupRepo() {
+      t.getTEIRepo(owner).then(repository => {
+        if (repository) {
+          repo = repository.name;
+          window.sessionStorage.setItem('repo', repo);
+          with (document.getElementById("TEIRepository")) {
+            innerHTML = repo;
+            removeAttribute('style');
+          }
+          with (document.getElementById("TEIRepository2")) {
+            innerHTML = repo;
+            removeAttribute('style');
+          }
+          document.getElementById('createFork').setAttribute('disabled', '');
+          setupBranches(owner, repo);
+        } else {
+          with (document.getElementById("TEIRepository")) {
+            innerHTML = 'no repository';
+            setAttribute('style', 'color: darkgray');
+          }
+          with (document.getElementById("TEIRepository2")) {
+            innerHTML = 'no repository';
+            setAttribute('style', 'color: darkgray');
+          }
+          document.getElementById('branch').setAttribute('disabled', '');
+        }
+    });
+    }
     // Set up owner info
-    let owner = window.sessionStorage.getItem("user");
-    let repo;
-    window.sessionStorage.setItem('owner', owner);
-    window.sessionStorage.setItem('ownerType', 'user');
+    let owner = window.sessionStorage.getItem('owner');
+    if (!owner) {
+      owner = window.sessionStorage.getItem('user');
+      window.sessionStorage.setItem('owner', owner);
+      window.sessionStorage.setItem('ownerType', 'user');
+
+    }
+    let repo = window.sessionStorage.getItem('repo');
     document.getElementById('owner').value = owner;
     document.getElementById('owner2').innerHTML = owner;
     document.getElementById('owner').addEventListener('change', ev => {
@@ -114,44 +152,57 @@
           window.sessionStorage.setItem('owner', owner);
           window.sessionStorage.setItem('ownerType', result);
           document.getElementById("owner2").innerHTML = owner;
-          document.getElementById("ownertext").innerHTML = '';
+          document.getElementById('ownertext').innerHTML = '';
+          setupRepo();
           if (repo) {
-            checkRepo(owner, repo);
+            if (window.sessionStorage.getItem('ownerType') == 'organization') {
+              checkRepo(owner, repo);
+            } else {
+              setupBranches(owner, repo);
+            }
           }
         } else {
-          document.getElementById("ownertext").innerHTML = "This owner does not exist.";
+          document.getElementById('ownertext').innerHTML = 'You are not a member of this organization.','';
+          document.getElementById('createFork').setAttribute('disabled','');
+          document.getElementById('owner2').innerHTML = '...';
+          with (document.getElementById("TEIRepository")) {
+            innerHTML = 'no repository';
+            setAttribute('style', 'color: darkgray');
+          }
+          with (document.getElementById("TEIRepository2")) {
+            innerHTML = 'no repository';
+            setAttribute('style', 'color: darkgray');
+          }
         }
         
       });
     });
     // Set up repo info
-    t.getTEIRepos(owner).then(repositories => {
-        repositories.forEach(repository => {
-          let opt = document.createElement("option");
-          opt.setAttribute("value", repository.name);
-          opt.innerHTML = repository.name;
-          document.getElementById("TEIRepos").appendChild(opt);
-        });
-        if (repositories.length > 0) {
-          repo = repositories[0].name;
-          window.sessionStorage.setItem('repo', repo);
-          document.getElementById("TEIRepository").value = repositories[0].name;
-          document.getElementById("TEIRepository2").innerHTML = repo;
-          setupBranches(owner, repo);
-        }
-    });
-    document.getElementById("TEIRepository").addEventListener('change', ev => {
-      document.getElementById('createFork').setAttribute('disabled','');
-      if (ev.target.value != '') {
-        repo = ev.target.value;
-        window.sessionStorage.setItem('repo', repo);
-        checkRepo(owner, repo);
-        document.getElementById("TEIRepository2").innerHTML = repo;
-      } 
-    });
+    setupRepo();
     document.getElementById("createFork").addEventListener('click', ev => {
-      t.forkTEIRepo(window.sessionStorage.getItem('ownertype') == 'organization' ? owner : null);
-      return false;
+      ev.target.innerHTML = 'Creating Fork...'
+      ev.target.setAttribute('disabled','');
+      t.forkTEIRepo(window.sessionStorage.getItem('ownerType') == 'organization' ? owner : null)
+        .then(fork => {
+          if (fork.message) {
+            console.log('Fork failed');
+            console.log(fork.message);
+          } else {
+            repo = fork.name;
+            window.sessionStorage.setItem('repo', fork.name);
+            ev.target.innerHTML = 'Create Fork';
+            with (document.getElementById("TEIRepository")) {
+              innerHTML = repo;
+              removeAttribute('style');
+            }
+            with (document.getElementById("TEIRepository2")) {
+              innerHTML = repo;
+              removeAttribute('style');
+            }
+            document.getElementById('createFork').setAttribute('disabled', '');
+            setupBranches(owner, repo);
+          }
+        });
     });
     // Set up branches
     document.getElementById("branch").addEventListener('change', ev => {
@@ -173,18 +224,22 @@
     document.getElementById('createBranch').addEventListener('click', ev => {
       let branch = document.getElementById("branch").value;
       if (branch) {
+        ev.target.setAttribute('disabled','');
+        ev.target.innerHTML = 'Creating branch...';
+        document.getElementById('branchtext').innerHTML = '';
         t.getBranch(owner, repo, 'dev').then(data => {
-          if (!data.message) {
-            t.createRef(owner, repo, branch, data.commit.sha).then(ref => {
-              window.sessionStorage.setItem('head', ref.object.sha);
-              let opt = document.createElement('option');
-              opt.setAttribute('value', window.sessionStorage.getItem('branch'));
-              opt.innerHTML = window.sessionStorage.getItem('branch');
-              document.getElementById('branches').appendChild(opt);
+            t.createRef(branch, data.commit.sha).then(ref => {
+              if (ref.message) {
+                document.getElementById('branchtext').innerHTML = `Could not create branch ${branch}`; 
+              } else {
+                window.sessionStorage.setItem('head', ref.object.sha);
+                let opt = document.createElement('option');
+                opt.setAttribute('value', window.sessionStorage.getItem('branch'));
+                opt.innerHTML = window.sessionStorage.getItem('branch');
+                document.getElementById('branches').appendChild(opt);
+                ev.target.innerHTML = 'Create a Branch';
+              }
             });
-          } else {
-            document.getElementById('branchtext').innerHTML = `Could not create branch ${branch}`; 
-          }
         });
       }
       return false;

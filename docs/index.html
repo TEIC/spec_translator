@@ -26,24 +26,47 @@
       margin-right: auto;
       width: 70vw;
     }
+    div#links {
+      position: fixed;
+      top: 150px;
+      left: 1vw;
+      width: 10vw;
+      overflow: auto;
+      overflow-wrap: break-word;
+    }
+    div#links a {
+      font-weight: bold;
+      text-decoration: none;
+      padding-left: 1em;
+    }
   </style>
   <title>TEI Specification Translator</title>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <ul class="nav d-flex justify-content-end">
-      <li class="nav-item">
-        <a class="nav-link" href="/">Browse</a>
-      </li>
-      <li class="nav-item" id="user">
-        <a class="nav-link" href="/user.html" id="userlink">Settings</a>
-      </li>
-      <li class="nav-item" id="submit">
-        <form onsubmit="return false">
-          <button type="submit" class="btn btn-outline-primary ms-2" id="createpr" disabled>Submit Your Work</button>
-        </form>
-      </li>
-    </ul>
+  <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #2277bb;">
+    <div class="container-fluid justify-content-start">
+      <a href="https://tei-c.org" class="navbar-brand">
+        <img src="css/TEI-logo.png" alt="TEI" height="50">
+      </a>
+      <ul class="navbar-nav d-flex">
+        <li class="nav-item">
+          <a class="nav-link" href="/">Browse</a>
+        </li>
+        <li class="nav-item" id="user">
+          <a class="nav-link" href="/user.html" id="userlink">Settings</a>
+        </li>
+        <li class="nav-item" id="submit">
+          <form onsubmit="return false">
+            <button type="submit" class="btn btn-outline-light ms-2" id="createpr" disabled>Submit Your Work</button>
+          </form>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="" id="visitrepo"></a>
+        </li>
+        <li class="nav-item" id="visitpr"></li>
+      </ul>
+    </div>
+    
   </nav>
   <div>
     <ul class="nav nav-tabs">
@@ -64,6 +87,7 @@
       </li>
     </ul>
     <div id="content">
+      <div id="links"></div>
       <table class="table table-striped">
         <thead>
           <tr>
@@ -89,6 +113,10 @@
     if (!t.loggedIn()) {
       window.location = '/auth/login';
     }
+    with (document.getElementById('visitrepo')) {
+      setAttribute('href',`https://github.com/${owner}/${repo}/tree/${branch}`);
+      innerHTML = `${owner}/${repo} on GitHub`;
+    }
     let table = document.querySelector('tbody');
     let specifications = {};
     function getIcons(lang) {
@@ -108,20 +136,37 @@
       return result;
     }
     function setTable(category) {
-      table.innerHTML = "";
+      table.innerHTML = '';
+      let abc = 'T';
+      let links = [];
       specifications[category].sort((a,b) => a.id > b.id).forEach(item => {
-          let link = document.createElement('tr');
-          let linkHTML = "<td><a href=\"translate.html?edit=" + item.URL + "\">" + item.id + "</a></td>" +
-            "<td> " + getIcons(item.de) +"</td>" +
-            "<td> " + getIcons(item.es) +"</td>" +
-            "<td> " + getIcons(item.fr) +"</td>" +
-            "<td> " + getIcons(item.it) +"</td>" +
-            "<td> " + getIcons(item.ja) +"</td>" +
-            "<td> " + getIcons(item.ko) +"</td>" +
-            "<td> " + getIcons(item["zh-TW"]) +"</td>";
-          link.innerHTML = linkHTML;
-          table.append(link);
+        let link = document.createElement('tr');
+        if (abc !== item.id.substring(0,1)) {
+          abc = item.id.substring(0,1);
+          link.setAttribute('id', abc);
+          links.push(abc);
+        }
+        let linkHTML = "<td><a href=\"translate.html?edit=" + item.URL + "\">" + item.id + "</a></td>" +
+          "<td> " + getIcons(item.de) +"</td>" +
+          "<td> " + getIcons(item.es) +"</td>" +
+          "<td> " + getIcons(item.fr) +"</td>" +
+          "<td> " + getIcons(item.it) +"</td>" +
+          "<td> " + getIcons(item.ja) +"</td>" +
+          "<td> " + getIcons(item.ko) +"</td>" +
+          "<td> " + getIcons(item["zh-TW"]) +"</td>";
+        link.innerHTML = linkHTML;
+        table.append(link);
+      });
+      document.getElementById('links').innerHTML = '';
+      if ("elements" === category) {
+        let linksEl = document.getElementById('links');
+        links.forEach(link => {
+          let a = document.createElement("a");
+          a.setAttribute('href', `#${link}`);
+          a.innerHTML = link;
+          linksEl.appendChild(a);
         });
+      } 
     }
     fetch('js/spec_lists.json')
       .then(response => response.json())
@@ -135,10 +180,16 @@
         evt.target.classList.add('active')
         setTable(evt.target.getAttribute('href').substring(1));
     }));
-    t.getBranch(owner, repo, branch).then(branch => {
+    t.getBranch(owner, repo, branch).then(br => {
       t.getBranch(owner, repo, 'dev').then(dev => {
-        if (dev.commit.sha != branch.commit.sha) {
-          document.getElementById('createpr').removeAttribute('disabled');
+        if (dev.commit.sha != br.commit.sha) {
+          t.getPRForBranch(owner, branch).then(prs => {
+            if (prs.length > 0) {
+              document.getElementById('visitpr').innerHTML = `<a class="nav-link" href="https://github.com/TEIC/TEI/pull/${prs[0].number}">Pull Request on GitHub</a>`;
+            } else {
+              document.getElementById('createpr').removeAttribute('disabled');
+            }
+          });
         }
       });
     });
