@@ -139,7 +139,7 @@
       table.innerHTML = '';
       let abc = 'T';
       let links = [];
-      specifications[category].sort((a,b) => a.id > b.id).forEach(item => {
+      specifications[category].sort((a,b) => a.id > b.id ? 1 : -1).forEach(item => {
         let link = document.createElement('tr');
         if (abc !== item.id.substring(0,1)) {
           abc = item.id.substring(0,1);
