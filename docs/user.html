@@ -116,6 +116,7 @@
             removeAttribute('style');
           }
           document.getElementById('createFork').setAttribute('disabled', '');
+          t.mergeUpstream(owner, repo); // Need some message if this fails
           setupBranches(owner, repo);
         } else {
           with (document.getElementById("TEIRepository")) {
@@ -126,6 +127,7 @@
             innerHTML = 'no repository';
             setAttribute('style', 'color: darkgray');
           }
+          document.getElementById('createFork').removeAttribute('disabled');
           document.getElementById('branch').setAttribute('disabled', '');
         }
     });
