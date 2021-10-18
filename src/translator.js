@@ -122,16 +122,16 @@ class Translator {
     });
     return response.json();
   }
-  async mergeUpstream(owner, repo) {
+  async mergeUpstream(owner, repo, branch='dev') {
     const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/merge-upstream`,
       { method: 'POST',
         headers: {
           'Accept': 'application/vnd.github.v3+json',
           'Authorization': 'token ' + window.sessionStorage.getItem('token')
         },
-        body: '{"branch":"dev"}'
+        body: `{"branch":"${branch}"}`
       });
-    return response.json();
+    return response.status;
   }
   async getBranches(owner, repo) {
     const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/branches`,

@@ -59,7 +59,7 @@
       </form>
       <div></div>
     </li>
-    <li class="container"><a href="/">Choose a TEI page to translate</a> <span id="rememberedpage"></span></li>
+    <li class="container"><a href="/" id="browse" class="btn btn-primary disabled" role="button" aria-disabled="true">Choose a TEI page to translate</a> <span id="rememberedpage"></span></li>
   </ol>
   
   <script>
@@ -214,13 +214,22 @@
             document.getElementById('createBranch').removeAttribute('disabled');
             document.getElementById('branchtext').innerHTML = "Branch does not exist. Click 'Create a Branch'";
           } else {
-            window.sessionStorage.setItem('branch', data.name);
-            window.sessionStorage.setItem('head', data.commit.sha);
+            t.mergeUpstream(owner, repo, data.name).then(status => {
+              if (status == 200) {
+                window.sessionStorage.setItem('branch', data.name);
+                window.sessionStorage.setItem('head', data.commit.sha);
+                document.getElementById('browse').classList.remove('disabled');
+              } else {
+                document.getElementById('branchtext').innerHTML = `Can't update branch, Visit the <a href="https://github.com/${owner}/${repo}/tree/${data.name}">repo</a> on GitHub to fix it.`;
+              }
+            });
             document.getElementById('createBranch').setAttribute('disabled','');
+            document.getElementById('branchtext').innerHTML = '';
           }
         });
       } else {
         document.getElementById('createBranch').setAttribute('disabled','');
+        document.getElementById('branchtext').innerHTML = 'Enter the name of a new or existing branch';
       }
     });
     document.getElementById('createBranch').addEventListener('click', ev => {

@@ -58,7 +58,7 @@ body {
 }
 dl {
   display: grid;
-  grid-template-columns: 1fr 9fr;
+  grid-template-columns: 10% 90%;
   grid-auto-flow: row;
 }
 dt {
