@@ -430,7 +430,7 @@ class Translator {
           let result = document.createElement("dl");
           result.innerHTML = "<dt><span class=\"i18n\">Datatype</sapn></dt>";
           let dd = document.createElement("dd");
-          dd.appendChild(document.createTextNode(getAttribute("minoccurs") + '–' 
+          dd.appendChild(document.createTextNode(elt.getAttribute("minoccurs") + '–' 
             + (elt.getAttribute("maxoccurs") == 'unbounded' ? '∞' : elt.getAttribute("maxoccurs")) 
             + ' of '));
           dd.appendChild(elt.querySelector("tei-dataref").cloneNode());
@@ -527,7 +527,17 @@ class Translator {
           result.innerHTML = "<dt><span class=\"i18n\">Notes</span></dt><dd class=\"translatable\">" + elt.innerHTML + "</dd>";
           return result;
         }]
-      ]
+      ],
+      "valList": (elt) => {
+        let result = document.createElement('div');
+        result.innerHTML = '<h5>Sample values:</h5>';
+        let dl = document.createElement('dl');
+        elt.querySelectorAll('tei-valitem').forEach(item => {
+          dl.innerHTML += '<dt>' + item.getAttribute('ident') + '</dt><dd>' + item.innerHTML + '</dd>';
+        })
+        result.appendChild(dl);
+        return result;
+      }
     }
   }
 }

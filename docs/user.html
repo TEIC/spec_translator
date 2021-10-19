@@ -243,12 +243,15 @@
               if (ref.message) {
                 document.getElementById('branchtext').innerHTML = `Could not create branch ${branch}`; 
               } else {
+                window.sessionStorage.setItem('branch', branch);
                 window.sessionStorage.setItem('head', ref.object.sha);
                 let opt = document.createElement('option');
                 opt.setAttribute('value', window.sessionStorage.getItem('branch'));
                 opt.innerHTML = window.sessionStorage.getItem('branch');
                 document.getElementById('branches').appendChild(opt);
                 ev.target.innerHTML = 'Create a Branch';
+                ev.target.setAttribute('disabled','');
+                document.getElementById('browse').classList.remove('disabled');
               }
             });
         });
