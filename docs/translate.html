@@ -20,7 +20,7 @@
       const codemirrors = [];
       function toggleEdit(lang) {
         document.querySelectorAll("cetei-translate").forEach(function(elt){
-          elt.parentNode.removeChild(elt);
+          elt.parentElement.replaceChild(t.ct.utilities.copyAndReset(elt.children[0]), elt);
         });
         document.querySelectorAll(".i18n").forEach(function(elt) {
           if (!elt.hasAttribute('data-key')) {
@@ -73,6 +73,7 @@
       }
       let params = (new URL(window.location)).searchParams;
       if (params.has("edit")) {
+        if 
         t.ct.getHTML5(`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/P5/Source/Specs/` + params.get("edit") + '?new=' + Date.now(), function(data) {
           document.querySelector(".content").replaceChildren(data);
         });
@@ -155,7 +156,6 @@
               window.sessionStorage.setItem('head', commit.sha);
               ev.target.innerHTML = 'Save';
               ev.target.setAttribute('disabled','');
-              window.location.reload();
             } else {
               console.log(data.message);
             }

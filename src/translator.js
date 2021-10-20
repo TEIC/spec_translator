@@ -359,14 +359,21 @@ class Translator {
     let xpath = this.getTEIXPath(elt);
     let result = doc.evaluate(xpath, doc, this.resolveNS, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
     if (result.singleNodeValue) {
-      result.singleNodeValue.innerHTML = elt.value;
-      result.singleNodeValue.setAttribute('versionDate', (new Date()).toISOString().substring(0,10));
+      if (elt.value == '') {
+        result.singleNodeValue.parentElement().removeChild(result.singleNodeValue);
+      } else {
+        result.singleNodeValue.innerHTML = elt.value;
+        result.singleNodeValue.setAttribute('versionDate', (new Date()).toISOString().substring(0,10));
+      }
     } else {
+      if (elt.value == '') {
+        return doc;
+      }
       xpath = xpath.replace(/@xml:lang='(..)'/, "@xml:lang='en'");
       result = doc.evaluate(xpath, doc, this.resolveNS, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
       let enElt = result.singleNodeValue;
       // match indent level of the translated element, if any
-      if (enElt.previousSibling.nodeType === Node.TEXT_NODE) {
+      if (enElt?.previousSibling.nodeType === Node.TEXT_NODE) {
         let ws = enElt.previousSibling.nodeValue.replace(/.*(\w+)$/, "$1");
         enElt.insertAdjacentElement('afterend', this.toTEI(doc, this.teiParent(elt)))
           .insertAdjacentText('beforebegin', ws);

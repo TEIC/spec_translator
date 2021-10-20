@@ -58,7 +58,7 @@ body {
 }
 dl {
   display: grid;
-  grid-template-columns: 10% 90%;
+  grid-template-columns: min-content auto;
   grid-auto-flow: row;
 }
 dt {
@@ -68,6 +68,7 @@ dt {
 dd {
   grid-column: 2;
   list-style-type: none;
+  padding-left: 1em;
 }
 nav {
   font-family: 'Noto Sans', Verdana, Geneva, Tahoma, sans-serif;
