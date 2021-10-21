@@ -50,9 +50,11 @@
         document.querySelectorAll("textarea.code").forEach(function(elt) {
           codemirrors.push(CodeMirror.fromTextArea(elt, {
             lineNumbers: true,
+            lineWrapping: true,
             mode: {name: "xml", matchClosing: true}
           }));
         });
+        codemirrors.forEach(cm => cm.setSize(null,200));
         document.querySelectorAll('textarea').forEach(elt => {
           elt.addEventListener('change', ev => {
             const save = document.getElementById('commit');

@@ -359,13 +359,17 @@ class Translator {
     let xpath = this.getTEIXPath(elt);
     let result = doc.evaluate(xpath, doc, this.resolveNS, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
     if (result.singleNodeValue) {
+      // Remove element if translation has been deleted
       if (elt.value == '') {
         result.singleNodeValue.parentElement().removeChild(result.singleNodeValue);
       } else {
-        result.singleNodeValue.innerHTML = elt.value;
-        result.singleNodeValue.setAttribute('versionDate', (new Date()).toISOString().substring(0,10));
+        // No-op if text hasn't changed
+        if (result.singleNodeValue.innerHTML != elt.value) {
+          result.singleNodeValue.innerHTML = elt.value;
+          result.singleNodeValue.setAttribute('versionDate', (new Date()).toISOString().substring(0,10));
+        }
       }
-    } else {
+    } else { // New translation; skip if empty
       if (elt.value == '') {
         return doc;
       }
@@ -473,7 +477,7 @@ class Translator {
       "desc": [
         ["cetei-translate>tei-desc", function(elt){
           let result = document.createElement("form");
-          result.innerHTML = "<textarea class=\"translate\">" + this.serialize(elt, true).replace(/^( |\t)+/gm, "") + "</textarea>";
+          result.innerHTML = "<textarea class=\"code translate\">" + this.serialize(elt, true).replace(/^( |\t)+/gm, "") + "</textarea>";
           return result;
         }],
         ["*[lang=en]", ["<span class=\"translatable\">","</span>"]]
