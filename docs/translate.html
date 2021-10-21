@@ -73,7 +73,6 @@
       }
       let params = (new URL(window.location)).searchParams;
       if (params.has("edit")) {
-        if 
         t.ct.getHTML5(`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/P5/Source/Specs/` + params.get("edit") + '?new=' + Date.now(), function(data) {
           document.querySelector(".content").replaceChildren(data);
         });
