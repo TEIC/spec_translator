@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spec Translator: User</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
+    <script src="js/translator.js" charset="utf-8"></script>
+    <style>
+      main {
+        padding-top: 1em;
+      }
+      .bi-calendar-check {
+        color: green;
+      }
+      .bi-calendar-x {
+        color: red;
+      }
+      .bi-check-lg {
+        color: green;
+      }
+      .bi-x-lg {
+        color: red;
+      }
+    </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #2277bb;">
+    <div class="container-fluid justify-content-start">
+      <a href="https://tei-c.org" class="navbar-brand">
+        <img src="css/TEI-logo.png" alt="TEI" height="50">
+      </a>
+      <ul class="navbar-nav d-flex justify-content-end">
+        <li class="nav-item">
+          <a class="nav-link" href="/">Browse</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/user.html">Settings</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  <div class="container bd-layout">
+    <main>
+      <h2>TEI Specification Translator</h2>
+      <h3>Getting started</h3>
+      <p>Clicking on "Browse" or "Settings" above will make you log in via <a href="https://github.com">GitHub</a>, if you haven't already done this. You can create a GitHub account if you don't already have one. You'll be taken to the Settings page after you log in. Before you can save your work, you'll need to choose a repository to save to, which must be a fork of the TEI repo. This can be in your own account or in a GitHub organization you're a member of.</p>
+      <p>The next step is to choose or create a branch to save into. Branches can have any name that doesn't conflict with a branch name in the TEI repo. If you already have a branch you want to work in, you can type or choose its name. If you type a new name, you'll be prompted to create the branch. You should then be able to choose what you want to work on.</p>
+      <p>The browse view gives you lists of elements, attribute classes, model classes, macros, and datatypes. For each language, there will be icons telling you what the state of the translations are. A <i class="bi-check-lg"></i> means everything has been translated. A <i class="bi-calendar-check"></i> means all translations are up to date. A <i class="bi-x-lg"></i> means there are missing translations. A <i class="bi-calendar-x"></i> means there are out of date translations.</p>
+      <p>Clicking on a name link will take you to the specification page for that item. You can then choose a language to work in, enter your translations, and save them when you're done.</p>
+      <p>Saving your work creates a commit on GitHub, in the branch you chose. You can visit your repo on GitHub to see all the changes you've made. When you're ready to submit your work, click the "Submit Your Work" button, and a Pull Request will be created for review on the TEI repo. You can continue to save changes until the Pull Request is closed.</p>
+      <h3>Setting up a translation campaign</h3>
+      <p>If you want to collaborate with a group in translating pages, you will first need to set up an <a href="https://docs.github.com/en/organizations/collaborating-with-groups-in-organizations/creating-a-new-organization-from-scratch">organization</a> on GitHub, create a fork of <a href="https://github.com/TEIC/TEI">TEIC/TEI</a> within it, and then invite your collaborators to work on the fork (see <a href="https://docs.github.com/en/organizations/managing-access-to-your-organizations-repositories">Managing access to your organization's repositories</a>). When your collaborators sign in to translate.tei-c.org, they will be able to type in the organization name instead of their username to access the organization's fork. You will want to set up a branch for everyone to work in and let your collaborators know which branch to choose.</p>
+    </main>
+  </div>
+  
+</body>
+</html>
