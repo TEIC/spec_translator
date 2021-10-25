@@ -86,3 +86,9 @@ textarea {
   width: 100%;
   height: 4em;
 }
+.showmarkup *[data-origname]::before {
+  content: '<' attr(data-origname) '>';
+}
+.showmarkup *[data-origname]::after {
+  content: '</' attr(data-origname) '>';
+}

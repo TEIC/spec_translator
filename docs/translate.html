@@ -30,6 +30,7 @@
         });
         document.querySelectorAll(".translatable").forEach(function(elt) {
           if (!elt.matches("*[hidden] " + elt.localName)) {
+            elt.classList.add('showmarkup');
             let tr = document.createElement("cetei-translate");
             let teiElt = t.teiParent(elt);
             let langElt = teiElt.parentElement.querySelector(teiElt.parentElement.localName + '>' +teiElt.localName + "[lang=" + lang.substring(1) + "]");

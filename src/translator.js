@@ -507,11 +507,15 @@ class Translator {
         if (attList) {
           result.appendChild(attList.cloneNode(true));
         }
+        let remarks = elt.querySelectorAll("tei-elementSpec>tei-remarks");
+        remarks.forEach(remark => {
+          result.appendChild(remark.cloneNode(true));
+        });
         let exempla = elt.querySelectorAll("tei-exemplum");
         for (let i =0; i < exempla.length; i++) {
           result.appendChild(exempla[i].cloneNode(true));
         }
-        let remarks = elt.querySelector("tei-exemplum>tei-remarks");
+        remarks = elt.querySelector("tei-exemplum>tei-remarks");
         if (remarks) {
           result.appendChild(remarks.cloneNode(true));
         }
