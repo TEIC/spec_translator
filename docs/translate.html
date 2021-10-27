@@ -20,7 +20,11 @@
       const codemirrors = [];
       function toggleEdit(lang) {
         document.querySelectorAll("cetei-translate").forEach(function(elt){
-          elt.parentElement.replaceChild(t.ct.utilities.copyAndReset(elt.children[0]), elt);
+          if (elt.hasAttribute('new')) {
+            elt.parentElement.removeChild(elt);
+          } else {
+            elt.parentElement.replaceChild(t.ct.utilities.copyAndReset(elt.children[0]), elt);
+          }
         });
         document.querySelectorAll(".i18n").forEach(function(elt) {
           if (!elt.hasAttribute('data-key')) {
@@ -35,6 +39,7 @@
             let teiElt = t.teiParent(elt);
             let langElt = teiElt.parentElement.querySelector(teiElt.parentElement.localName + '>' +teiElt.localName + "[lang=" + lang.substring(1) + "]");
             if (!langElt) {
+              tr.setAttribute('new','');
               langElt = teiElt.cloneNode();
               langElt.setAttribute("lang", lang.substring(1));
               langElt.setAttribute("xml:lang", lang.substring(1));

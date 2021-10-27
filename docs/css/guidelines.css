@@ -87,8 +87,10 @@ textarea {
   height: 4em;
 }
 .showmarkup *[data-origname]::before {
+  font-family: "Noto Mono", Consolas, "Courier New", Courier, monospace;
   content: '<' attr(data-origname) '>';
 }
 .showmarkup *[data-origname]::after {
+  font-family: "Noto Mono", Consolas, "Courier New", Courier, monospace;
   content: '</' attr(data-origname) '>';
 }
