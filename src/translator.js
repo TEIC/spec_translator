@@ -325,8 +325,8 @@ class Translator {
     let path = "/";
     path += this.teiParents(elt).reverse().map(e => {
       let result = "tei:" + e.getAttribute("data-origname"); 
-      if (e.localName == "tei-exemplum") {
-
+      if (e.tagName == 'TEI-VALITEM') {
+        result += "[@ident='" + e.getAttribute('ident') + "']";
       }
       if (e.hasAttribute("lang")){ 
         result += "[@xml:lang='" + e.getAttribute("lang") + "']"
@@ -364,7 +364,7 @@ class Translator {
         result.singleNodeValue.parentElement().removeChild(result.singleNodeValue);
       } else {
         // No-op if text hasn't changed
-        if (result.singleNodeValue.innerHTML != elt.value) {
+        if (this.normalize(result.singleNodeValue.innerHTML) != this.normalize(elt.value)) {
           result.singleNodeValue.innerHTML = elt.value;
           result.singleNodeValue.setAttribute('versionDate', (new Date()).toISOString().substring(0,10));
         }
@@ -396,6 +396,12 @@ class Translator {
   content() {
     const s = new XMLSerializer();
     return s.serializeToString(this.ct.XML_dom);
+  }
+  normalize(str) {
+    return str.replace(/^( |\t)+/gm, '')
+      .replace(/\n/g, '')
+      .replace(/\s+$/gm,'')
+      .replace(/ xmlns="http:\/\/www.tei-c.org\/ns\/1.0"/g, '');
   }
 
   static behaviors = {
