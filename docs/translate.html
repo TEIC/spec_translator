@@ -163,6 +163,7 @@
               window.sessionStorage.setItem('head', commit.sha);
               ev.target.innerHTML = 'Save';
               ev.target.setAttribute('disabled','');
+              document.getElementById('createpr').removeAttribute('disabled');
             } else {
               console.log(commit.message);
             }

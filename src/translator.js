@@ -548,7 +548,7 @@ class Translator {
         result.innerHTML = '<h5>Sample values:</h5>';
         let dl = document.createElement('dl');
         elt.querySelectorAll('tei-valitem').forEach(item => {
-          dl.innerHTML += '<dt>' + item.getAttribute('ident') + '</dt><dd>' + item.innerHTML + '</dd>';
+          dl.innerHTML += '<dt>' + item.getAttribute('ident') + '</dt><dd>' + item.outerHTML + '</dd>';
         })
         result.appendChild(dl);
         return result;
