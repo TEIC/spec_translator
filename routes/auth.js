@@ -10,7 +10,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/login', function(req, res, next) {
-  res.redirect(`https://github.com/login/oauth/authorize?client_id=${github.clientId}&scope=repo`)
+  res.redirect(`https://github.com/login/oauth/authorize?client_id=${github.clientId}&scope=public_repo`)
 });
 
 router.get('/redirect', function(req, res, next) {

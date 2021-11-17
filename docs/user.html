@@ -207,6 +207,10 @@
         });
     });
     // Set up branches
+    let branch = window.sessionStorage.getItem('branch');
+    if (branch) {
+      document.getElementById("branch").value = branch;
+    }
     document.getElementById("branch").addEventListener('change', ev => {
       if (ev.target.value != '') {
         t.getBranch(owner, repo, ev.target.value).then(data => {
