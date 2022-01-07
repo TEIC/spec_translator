@@ -347,9 +347,10 @@ class Translator {
   }
   toTEI(doc, elt) {
     let e = doc.createElementNS('http://www.tei-c.org/ns/1.0', elt.getAttribute("data-origname"));
+    let atts = elt.getAttribute('data-origatts').split(' ');
     Array.from(elt.attributes).forEach(att => {
       if (!att.name.startsWith("data-") && att.name != 'lang') {
-        e.setAttribute(att.name, att.value);
+        e.setAttribute(atts.find(a => a.toLowerCase() == att.name), att.value);
       }
     });
     e.innerHTML = elt.querySelector("textarea").value;
