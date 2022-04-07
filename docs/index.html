@@ -168,7 +168,7 @@
         });
       } 
     }
-    fetch('js/spec_lists.json')
+    fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/P5/spec_lists.json`)
       .then(response => response.json())
       .then(data => {
         specifications = data;
