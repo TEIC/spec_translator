@@ -130,7 +130,15 @@
           document.getElementById('createFork').removeAttribute('disabled');
           document.getElementById('branch').setAttribute('disabled', '');
         }
-    });
+      });
+    }
+    function rememberPage() {
+      let rp = window.sessionStorage.getItem('requestedPage');
+      if (rp) {
+        let name = rp.replace(/.*\/([.a-zA-Z]+)\.xml/, '$1');
+        document.getElementById('rememberedPage').innerHTML = ` or return to <a href="${rp}">${name}</a>.`
+        window.sessionStorage.removeItem('rememberedPage');
+      }
     }
     // Set up owner info
     let owner = window.sessionStorage.getItem('owner');
@@ -223,6 +231,7 @@
                 window.sessionStorage.setItem('branch', data.name);
                 window.sessionStorage.setItem('head', data.commit.sha);
                 document.getElementById('browse').classList.remove('disabled');
+                rememberPage();
               } else {
                 document.getElementById('branchtext').innerHTML = `Can't update branch, Visit the <a href="https://github.com/${owner}/${repo}/tree/${data.name}">repo</a> on GitHub to fix it.`;
               }
@@ -256,12 +265,7 @@
                 ev.target.innerHTML = 'Create a Branch';
                 ev.target.setAttribute('disabled','');
                 document.getElementById('browse').classList.remove('disabled');
-                let rp = window.sessionStorage.getItem('requestedPage');
-                if (rp) {
-                  let name = rp.replace(/.*\/([.a-zA-Z]+)\.xml/, '$1');
-                  document.getElementById('rememberedPage').innerHTML = ` or return to <a href="${rp}">${name}</a>.`
-                  window.sessionStorage.removeItem('rememberedPage');
-                }
+                rememberPage();
               }
             });
         });
