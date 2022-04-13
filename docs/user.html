@@ -256,6 +256,12 @@
                 ev.target.innerHTML = 'Create a Branch';
                 ev.target.setAttribute('disabled','');
                 document.getElementById('browse').classList.remove('disabled');
+                let rp = window.sessionStorage.getItem('requestedPage');
+                if (rp) {
+                  let name = rp.replace(/.*\/([.a-zA-Z]+)\.xml/, '$1');
+                  document.getElementById('rememberedPage').innerHTML = ` or return to <a href="${rp}">${name}</a>.`
+                  window.sessionStorage.removeItem('rememberedPage');
+                }
               }
             });
         });

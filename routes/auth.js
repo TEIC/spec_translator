@@ -4,11 +4,6 @@ var GithubAuth = require('../src/auth');
 
 const github = require('../src/github.json');
 
-router.get('/', function(req, res, next) {
-  // Do auth logic
-  res.render('index', { title: 'Express' });
-});
-
 router.get('/login', function(req, res, next) {
   res.redirect(`https://github.com/login/oauth/authorize?client_id=${github.clientId}&scope=public_repo`)
 });
