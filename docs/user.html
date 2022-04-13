@@ -136,8 +136,8 @@
       let rp = window.sessionStorage.getItem('requestedPage');
       if (rp) {
         let name = rp.replace(/.*\/([.a-zA-Z]+)\.xml/, '$1');
-        document.getElementById('rememberedPage').innerHTML = ` or return to <a href="${rp}">${name}</a>.`
-        window.sessionStorage.removeItem('rememberedPage');
+        document.getElementById('rememberedpage').innerHTML = ` or return to <a href="${rp}">${name}</a>.`
+        window.sessionStorage.removeItem('requestedPage');
       }
     }
     // Set up owner info
