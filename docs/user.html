@@ -135,7 +135,7 @@
     function rememberPage() {
       let rp = window.sessionStorage.getItem('requestedPage');
       if (rp) {
-        let name = rp.replace(/.*\/([.a-zA-Z]+)\.xml/, '$1');
+        let name = rp.replace(/.*\/translate.html\?edit=([.a-zA-Z]+)\.xml/, '$1');
         document.getElementById('rememberedpage').innerHTML = ` or return to <a href="${rp}">${name}</a>.`
         window.sessionStorage.removeItem('requestedPage');
       }
