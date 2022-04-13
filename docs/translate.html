@@ -77,7 +77,7 @@
       const branch = window.sessionStorage.getItem('branch');
       let t = new Translator();
       if (!t.loggedIn()) {
-        window.setItem('requestedPage', window.location.href);
+        window.sessionStorage.setItem('requestedPage', window.location.href);
         window.location = '/auth/login';
       }
       let params = (new URL(window.location)).searchParams;
