@@ -198,6 +198,9 @@
           }
         });
       });
+      if (window.location.hash) {
+        toggleEdit(window.location.hash.substring(1));
+      }
     </script>
   </body>
 </html>
