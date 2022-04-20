@@ -84,6 +84,9 @@
       if (params.has("edit")) {
         t.ct.getHTML5(`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/P5/Source/Specs/` + params.get("edit") + '?new=' + Date.now(), function(data) {
           document.querySelector(".content").replaceChildren(data);
+          if (window.location.hash) {
+            toggleEdit(window.location.hash.substring(1));
+          }
         });
       }
       
@@ -198,9 +201,6 @@
           }
         });
       });
-      if (window.location.hash) {
-        toggleEdit(window.location.hash.substring(1));
-      }
     </script>
   </body>
 </html>
