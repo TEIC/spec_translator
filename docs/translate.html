@@ -41,10 +41,11 @@
             if (!langElt) {
               tr.setAttribute('new','');
               langElt = teiElt.cloneNode();
-              langElt.setAttribute("lang", lang.substring(1));
+              langElt.setAttribute("lang", lang.substring());
               langElt.setAttribute("xml:lang", lang.substring(1));
               langElt.setAttribute("versiondate", (new Date()).toISOString().substring(0,10))
               langElt.removeAttribute("data-processed");
+              langElt.innerHTML = teiElt.querySelector("span[hidden]").innerHTML;
               tr.appendChild(langElt);
               teiElt.insertAdjacentElement('afterend',tr);
             } else {
@@ -85,7 +86,7 @@
         t.ct.getHTML5(`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/P5/Source/Specs/` + params.get("edit") + '?new=' + Date.now(), function(data) {
           document.querySelector(".content").replaceChildren(data);
           if (window.location.hash) {
-            toggleEdit(window.location.hash.substring(1));
+            toggleEdit(window.location.hash);
           }
         });
       }

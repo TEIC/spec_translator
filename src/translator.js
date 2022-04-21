@@ -359,13 +359,16 @@ class Translator {
   updateSource(doc, elt) {
     let xpath = this.getTEIXPath(elt);
     let result = doc.evaluate(xpath, doc, this.resolveNS, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+    let enResult = doc.evaluate(result.replace(/xml:lang="[^"]+"/, 'xml:lang="en"', doc, 
+                   this.resolveNS, XPathResult.FIRST_ORDERED_NODE_TYPE, null));
     if (result.singleNodeValue) {
       // Remove element if translation has been deleted
       if (elt.value == '') {
         result.singleNodeValue.parentElement().removeChild(result.singleNodeValue);
       } else {
         // No-op if text hasn't changed
-        if (this.normalize(result.singleNodeValue.innerHTML) != this.normalize(elt.value)) {
+        if (this.normalize(result.singleNodeValue.innerHTML) != this.normalize(elt.value) &&
+            this.normalize(enResult.singleNodeValue.innerHTML) != this.normalize(elt.value)) {
           result.singleNodeValue.innerHTML = elt.value;
           result.singleNodeValue.setAttribute('versionDate', (new Date()).toISOString().substring(0,10));
         }
