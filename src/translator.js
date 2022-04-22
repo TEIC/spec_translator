@@ -359,7 +359,7 @@ class Translator {
   updateSource(doc, elt) {
     let xpath = this.getTEIXPath(elt);
     let result = doc.evaluate(xpath, doc, this.resolveNS, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-    let enResult = doc.evaluate(xpath.replace(/xml:lang=("|')[^"']+("|')/, 'xml:lang="en"'), doc, 
+    let enElt = doc.evaluate(xpath.replace(/xml:lang=("|')[^"']+("|')/, 'xml:lang="en"'), doc, 
                    this.resolveNS, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
     if (result.singleNodeValue) {
       // Remove element if translation has been deleted
@@ -368,7 +368,7 @@ class Translator {
       } else {
         // No-op if text hasn't changed
         if (this.normalize(result.singleNodeValue.innerHTML) != this.normalize(elt.value) &&
-            this.normalize(enResult.singleNodeValue.innerHTML) != this.normalize(elt.value)) {
+            this.normalize(enElt.singleNodeValue.innerHTML) != this.normalize(elt.value)) {
           result.singleNodeValue.innerHTML = elt.value;
           result.singleNodeValue.setAttribute('versionDate', (new Date()).toISOString().substring(0,10));
         }
@@ -377,9 +377,6 @@ class Translator {
       if (elt.value == '') {
         return doc;
       }
-      xpath = xpath.replace(/@xml:lang='(..)'/, "@xml:lang='en'");
-      result = doc.evaluate(xpath, doc, this.resolveNS, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-      let enElt = result.singleNodeValue;
       // match indent level of the translated element, if any
       if (enElt?.previousSibling.nodeType === Node.TEXT_NODE) {
         let ws = enElt.previousSibling.nodeValue.replace(/.*(\w+)$/, "$1");
