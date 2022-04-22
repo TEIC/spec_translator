@@ -359,7 +359,7 @@ class Translator {
   updateSource(doc, elt) {
     let xpath = this.getTEIXPath(elt);
     let result = doc.evaluate(xpath, doc, this.resolveNS, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-    let enResult = doc.evaluate(result.replace(/xml:lang="[^"]+"/, 'xml:lang="en"', doc, 
+    let enResult = doc.evaluate(xpath.replace(/xml:lang=("|')[^"']+("|')/, 'xml:lang="en"'), doc, 
                    this.resolveNS, XPathResult.FIRST_ORDERED_NODE_TYPE, null));
     if (result.singleNodeValue) {
       // Remove element if translation has been deleted
