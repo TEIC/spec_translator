@@ -360,7 +360,7 @@ class Translator {
     let xpath = this.getTEIXPath(elt);
     let result = doc.evaluate(xpath, doc, this.resolveNS, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
     let enElt = doc.evaluate(xpath.replace(/xml:lang=("|')[^"']+("|')/, 'xml:lang="en"'), doc, 
-                   this.resolveNS, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+                   this.resolveNS, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
     if (result.singleNodeValue) {
       // Remove element if translation has been deleted
       if (elt.value == '') {
