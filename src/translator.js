@@ -368,7 +368,7 @@ class Translator {
       } else {
         // No-op if text hasn't changed
         if (this.normalize(result.singleNodeValue.innerHTML) != this.normalize(elt.value) &&
-            this.normalize(enElt.singleNodeValue.innerHTML) != this.normalize(elt.value)) {
+            this.normalize(enElt.innerHTML) != this.normalize(elt.value)) {
           result.singleNodeValue.innerHTML = elt.value;
           result.singleNodeValue.setAttribute('versionDate', (new Date()).toISOString().substring(0,10));
         }
