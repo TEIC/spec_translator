@@ -171,10 +171,9 @@
         });
       } 
     }
-    fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/P5/spec_lists.json`)
-      .then(response => response.json())
+    t.getBlobContent(owner, repo, branch, 'P5/spec_lists.json')
       .then(data => {
-        specifications = data;
+        specifications = JSON.parse(data);
         setTable("elements");
       });
     document.querySelectorAll(".nav-tabs a").forEach(link => 

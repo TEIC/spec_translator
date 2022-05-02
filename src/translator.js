@@ -244,10 +244,11 @@ class Translator {
     const head = branch.commit.sha;
     // get the full tree listing for head.tree
     const trees = await this.getTree(owner, repo, branch.commit.commit.tree.sha);
-    return trees.tree.find(tree => tree.path == 'P5/Source/Specs/' + path).sha;
+    return trees.tree.find(tree => tree.path == path).sha;
   }
   async getBlobContent(owner, repo, branch, path) {
-    const sha = await this.getBlobSHA(owner, repo, branch, path);
+    const p = path.match(/\.xml/) ? 'P5/Source/Specs/' + path : path;
+    const sha = await this.getBlobSHA(owner, repo, branch, p);
     const response = await(fetch(`https://api.github.com/repos/${owner}/${repo}/git/blobs/${sha}`, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
