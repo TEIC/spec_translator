@@ -45,12 +45,27 @@
               langElt.setAttribute("xml:lang", lang.substring(1));
               langElt.setAttribute("versiondate", (new Date()).toISOString().substring(0,10))
               langElt.removeAttribute("data-processed");
-              langElt.innerHTML = teiElt.querySelector("span[hidden]").innerHTML;
+              const content = teiElt.querySelector("span[hidden]").innerHTML;
+              if (content?.match(/<\w+[^>]*>/)) {
+                langElt.innerHTML = content;
+              }
               tr.appendChild(langElt);
+              let i = document.createElement('i');
+              i.setAttribute('class','bi-x-lg');
+              i.setAttribute('aria-label','missing translation');
+              i.setAttribute('title','missing translation');
+              tr.appendChild(i);
               teiElt.insertAdjacentElement('afterend',tr);
             } else {
               tr.appendChild(t.ct.utilities.copyAndReset(langElt));
               langElt.replaceWith(tr);
+              if (langElt.hasAttribute('data-outofdate')) {
+                let i = document.createElement('i');
+                i.setAttribute('class','bi-calendar-x');
+                i.setAttribute('aria-label','out of date translation');
+                i.setAttribute('title','out of date translation');
+                tr.appendChild(i);
+              }
             }
           }
         });
@@ -83,11 +98,23 @@
       }
       let params = (new URL(window.location)).searchParams;
       if (params.has("edit")) {
-        t.ct.getHTML5(`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/P5/Source/Specs/` + params.get("edit") + '?new=' + Date.now(), function(data) {
-          document.querySelector(".content").replaceChildren(data);
-          if (window.location.hash) {
-            toggleEdit(window.location.hash);
-          }
+        t.getBlobContent(owner, repo, branch, params.get('edit')).then(xml => {
+          t.ct.makeHTML5(xml, function(data) {
+            document.querySelector(".content").replaceChildren(data);
+            if (window.location.hash) {
+              toggleEdit(window.location.hash);
+            }
+          }, function(ne, e) {
+            if (e.hasAttribute('versionDate') && e.getAttribute('xml:lang') != 'en') {
+              let en = e.previousElementSibling;
+              while (en != null && en.getAttribute('xml:lang') != 'en') {
+                en = en.previousElementSibling;
+              }
+              if (en && en.getAttribute('versionDate') > e.getAttribute('versionDate')) {
+                ne.setAttribute('data-outofdate', '');
+              }
+            }
+          });
         });
       }
       

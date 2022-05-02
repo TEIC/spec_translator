@@ -11,6 +11,9 @@ class Translator {
   loggedIn() {
     return window.sessionStorage.getItem("user");
   }
+  logOut() {
+    window.sessionStorage.clear();
+  }
   async getCurrentUser() {
     const response = await fetch('https://api.github.com/user',
       { headers: {
@@ -122,6 +125,24 @@ class Translator {
     });
     return response.json();
   }
+  async deleteUnprotectedBranches(owner, repo) {
+    const branches = await this.getBranches(owner, repo);
+    for (const branch of branches ) {
+      if (!['dev','released'].includes(branch.name)) {
+        this.deleteRef(owner, repo, branch.name);
+      }
+    }
+  }
+  async deleteRef(owner, repo, ref) {
+    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/refs/heads/${ref}`, {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': 'token ' + window.sessionStorage.getItem('token')
+      }
+    });
+    return response.ok;
+  }
   async mergeUpstream(owner, repo, branch='dev') {
     const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/merge-upstream`,
       { method: 'POST',
@@ -215,6 +236,32 @@ class Translator {
       }
     }));
     return response.json();
+  }
+  async getBlobSHA(owner, repo, branchname, path) {
+    // Get HEAD of current branch
+    const branch = await this.getBranch(owner, repo, branchname);
+    // Get its commit -> head
+    const head = branch.commit.sha;
+    // get the full tree listing for head.tree
+    const trees = await this.getTree(owner, repo, branch.commit.commit.tree.sha);
+    return trees.tree.find(tree => tree.path == 'P5/Source/Specs/' + path).sha;
+  }
+  async getBlobContent(owner, repo, branch, path) {
+    const sha = await this.getBlobSHA(owner, repo, branch, path);
+    const response = await(fetch(`https://api.github.com/repos/${owner}/${repo}/git/blobs/${sha}`, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': 'token ' + window.sessionStorage.getItem('token')
+      }
+    }));
+    const json = await response.json();
+    return this.b64Decode(json.content);
+  }
+  b64Decode(str) {
+    // Going backwards: from bytestream, to percent-encoding, to original string.
+    return decodeURIComponent(atob(str).split('').map(c => {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
   }
   async createTree(base, path, sha, blob) {
     const owner = window.sessionStorage.getItem('owner');
@@ -367,8 +414,7 @@ class Translator {
         result.singleNodeValue.parentElement().removeChild(result.singleNodeValue);
       } else {
         // No-op if text hasn't changed
-        if (this.normalize(result.singleNodeValue.innerHTML) != this.normalize(elt.value) &&
-            this.normalize(enElt.innerHTML) != this.normalize(elt.value)) {
+        if (this.normalize(result.singleNodeValue.innerHTML) != this.normalize(elt.value)) {
           result.singleNodeValue.innerHTML = elt.value;
           result.singleNodeValue.setAttribute('versionDate', (new Date()).toISOString().substring(0,10));
         }
@@ -377,14 +423,17 @@ class Translator {
       if (elt.value == '') {
         return doc;
       }
-      // match indent level of the translated element, if any
-      if (enElt?.previousSibling.nodeType === Node.TEXT_NODE) {
-        let ws = enElt.previousSibling.nodeValue.replace(/.*(\w+)$/, "$1");
-        enElt.insertAdjacentElement('afterend', this.toTEI(doc, this.teiParent(elt)))
-          .insertAdjacentText('beforebegin', ws);
-      } else {
-        enElt.insertAdjacentElement('afterend', this.toTEI(doc, this.teiParent(elt)));
-      }          
+      // No-op if text is the same as the en element
+      if (this.normalize(enElt.innerHTML) != this.normalize(elt.value)) {
+        // match indent level of the translated element, if any
+        if (enElt?.previousSibling.nodeType === Node.TEXT_NODE) {
+          let ws = enElt.previousSibling.nodeValue.replace(/.*(\w+)$/, "$1");
+          enElt.insertAdjacentElement('afterend', this.toTEI(doc, this.teiParent(elt)))
+            .insertAdjacentText('beforebegin', ws);
+        } else {
+          enElt.insertAdjacentElement('afterend', this.toTEI(doc, this.teiParent(elt)));
+        }    
+      }
     }
     return doc;
   }

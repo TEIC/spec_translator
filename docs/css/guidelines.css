@@ -1,11 +1,15 @@
+cetei-translate {
+  display:block;
+  position: relative;
+}
 cetei-translate>tei-gloss {
-  display: inline;
+  display: block;
 }
 cetei-translate>tei-desc {
-  display: inline;
+  display: block;
 }
 cetei-translate>tei-remarks {
-  display: inline;
+  display: block;
 }
 cetei-translate.exemplum {
   display: block;
@@ -13,6 +17,13 @@ cetei-translate.exemplum {
 }
 cetei-translate.exemplum textarea {
   height: 15em;
+}
+i.bi-calendar-x,i.bi-x-lg {
+  color: red;
+  position: absolute;
+  top: 0;
+  right: -1.5em;
+  z-index: 100;
 }
 tei-att::before {
   content: '@';

@@ -6,14 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Spec Translator: User</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
-    <script src="js/translator.js" charset="utf-8"></script>
-    <style>
-      ol>li {
-        margin-top: 1em;;
-      }
-    </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
+  <script src="js/translator.js" charset="utf-8"></script>
+  <style>
+    ol>li {
+      margin-top: 1em;;
+    }
+  </style>
 </head>
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #2277bb;">
@@ -21,13 +21,15 @@
       <a href="https://tei-c.org" class="navbar-brand">
         <img src="css/TEI-logo.png" alt="TEI" height="50">
       </a>
-      <ul class="navbar-nav d-flex justify-content-end">
+      <ul class="navbar-nav d-flex w-100">
         <li class="nav-item">
           <a class="nav-link" href="/">Browse</a>
         </li>
+        <li class="ms-auto">
+          <a class="nav-link" href="loggedout.html" id="signout">Sign out</a>
+        </li>
       </ul>
     </div>
-    
   </nav>
   <ol>
     <li class="container">
@@ -198,6 +200,7 @@
             console.log('Fork failed');
             console.log(fork.message);
           } else {
+            t.deleteUnprotectedBranches(owner, 'TEI');
             repo = fork.name;
             window.sessionStorage.setItem('repo', fork.name);
             ev.target.innerHTML = 'Create Fork';
@@ -246,7 +249,7 @@
       }
     });
     document.getElementById('createBranch').addEventListener('click', ev => {
-      let branch = document.getElementById("branch").value;
+      const branch = document.getElementById("branch").value;
       if (branch) {
         ev.target.setAttribute('disabled','');
         ev.target.innerHTML = 'Creating branch...';
@@ -272,6 +275,10 @@
       }
       return false;
     });
+    document.getElementById('signout').addEventListener('click', ev => {
+      t.logOut();
+      return false;
+    })
   </script>
 </body>
 </html>
