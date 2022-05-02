@@ -140,7 +140,7 @@
         <a href="https://tei-c.org" class="navbar-brand">
           <img src="css/TEI-logo.png" alt="TEI" height="50">
         </a>
-        <ul class="navbar-nav">
+        <ul class="navbar-nav w-100">
           <li class="nav-item">
             <a class="nav-link" href="/">Browse</a>
           </li>
@@ -158,6 +158,9 @@
             </form>
           </li>
           <li class="nav-item" id="visitpr"></li>
+          <li class="ms-auto">
+            <a class="nav-link" href="loggedout.html" id="signout">Sign out</a>
+          </li>
         </ul>
       </div>
 
@@ -229,6 +232,9 @@
           }
         });
       });
+      document.getElementById('signout').addEventListener('click', ev => {
+        t.logOut();
+      })
     </script>
   </body>
 </html>
