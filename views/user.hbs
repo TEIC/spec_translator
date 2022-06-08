@@ -2,14 +2,13 @@
 <html>
   <head>
     <title>{{title}}</title>
-    <script src="/js/translator.js"></script>
+    <script src="/js/api.js"></script>
   </head>
   <body>
     <p>Redirecting to user page...</p>
     <script>
       window.sessionStorage.setItem('token', '{{token}}');
-      let t = new Translator();
-      t.getCurrentUser().then(user => {
+      API.getCurrentUser().then(user => {
         window.sessionStorage.setItem('user', user.login);
         window.location = '/user.html';
       });
