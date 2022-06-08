@@ -6,9 +6,11 @@
     <link rel="stylesheet" href="css/codemirror.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
-    <script src="js/translator.js" charset="utf-8"></script>
-    <script src="js/i18n.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>    <script src="js/translator.js" charset="utf-8"></script>
+    <script src="js/api.js" charset="utf-8"></script>
+    <script src="js/internationalize.js" charset="utf-8"></script>
     <script src="js/codemirror.js"></script>
     <script src="js/xml.js"></script>
     <script>
@@ -26,12 +28,6 @@
             elt.parentElement.replaceChild(t.ct.utilities.copyAndReset(elt.children[0]), elt);
           }
         });
-        document.querySelectorAll(".i18n").forEach(function(elt) {
-          if (!elt.hasAttribute('data-key')) {
-            elt.setAttribute('data-key', elt.innerText);
-          }
-          elt.innerText = t.conv(elt.getAttribute('data-key'), lang.substring(1));
-        });
         document.querySelectorAll(".translatable").forEach(function(elt) {
           if (!elt.matches("*[hidden] " + elt.localName)) {
             elt.classList.add('showmarkup');
@@ -41,7 +37,7 @@
             if (!langElt) {
               tr.setAttribute('new','');
               langElt = teiElt.cloneNode();
-              langElt.setAttribute("lang", lang.substring());
+              langElt.setAttribute("lang", lang.substring(1));
               langElt.setAttribute("xml:lang", lang.substring(1));
               langElt.setAttribute("versiondate", (new Date()).toISOString().substring(0,10))
               langElt.removeAttribute("data-processed");
@@ -85,6 +81,14 @@
             }
           });
         });
+        if (!i) {
+          Internationalize.init(owner, repo, branch).then(i => {
+            i.setup();
+            i.setLang(i.language);
+          });
+        } else {
+          i.setLang(i.language);
+        }
       }
     </script>
     <script type="text/javascript">
@@ -92,17 +96,18 @@
       const repo = window.sessionStorage.getItem('repo');
       const branch = window.sessionStorage.getItem('branch');
       let t = new Translator();
+      let i;
       if (!t.loggedIn()) {
         window.sessionStorage.setItem('requestedPage', window.location.href);
         window.location = '/auth/login';
       }
       let params = (new URL(window.location)).searchParams;
       if (params.has("edit")) {
-        t.getBlobContent(owner, repo, branch, params.get('edit')).then(xml => {
+        API.getBlobContent(owner, repo, branch, params.get('edit')).then(xml => {
           t.ct.makeHTML5(xml, function(data) {
             document.querySelector(".content").replaceChildren(data);
             if (window.location.hash) {
-              toggleEdit(window.location.hash);
+                toggleEdit(window.location.hash);
             }
           }, function(ne, e) {
             if (e.hasAttribute('versionDate') && e.getAttribute('xml:lang') != 'en') {
@@ -120,6 +125,9 @@
       
     </script>
     <style>
+      body {
+        display: none;
+      }
       nav {
         text-align: right;
       }
@@ -142,24 +150,33 @@
         </a>
         <ul class="navbar-nav w-100">
           <li class="nav-item">
-            <a class="nav-link" href="/">Browse</a>
+            <a class="nav-link i18n" href="/" data-key="browse">Browse</a>
           </li>
           <li class="nav-item" id="user">
-            <a class="nav-link" href="/user.html" id="userlink">Settings</a>
+            <a class="nav-link i18n" href="/user.html" id="userlink" data-key="settings">Settings</a>
           </li>
           <li class="nav-item" id="save">
-            <form onsubmit="return false">
-              <button type="submit" class="btn btn-outline-light ms-2" id="commit" disabled>Save</button>
-            </form>
+            <button type="submit" class="btn btn-outline-light ms-2 i18n" id="commit" disabled data-key="save">Save</button>
           </li>
           <li class="nav-item" id="pr">
-            <form onsubmit="return false">
-              <button type="submit" class="btn btn-outline-light ms-3" id="createpr" disabled>Submit Your Work</button>
-            </form>
+            <button type="submit" class="btn btn-outline-light ms-3 i18n" id="createpr" disabled data-key="submit">Submit Your Work</button>
           </li>
           <li class="nav-item" id="visitpr"></li>
-          <li class="ms-auto">
-            <a class="nav-link" href="loggedout.html" id="signout">Sign out</a>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle i18n" href="#" data-toggle="dropdown" data-key="language" aria-haspopup="true" aria-expanded="false" id="menulang">Language</a>
+            <div class="dropdown-menu" aria-labelledby="menulang">
+              <a class="dropdown-item lang" data-lang="de" href="#">Deutsch</a>
+              <a class="dropdown-item lang" data-lang="en" href="#">English</a>
+              <a class="dropdown-item lang" data-lang="es" href="#">Español</a>
+              <a class="dropdown-item lang" data-lang="fr" href="#">Français</a>
+              <a class="dropdown-item lang" data-lang="it" href="#">Italiano</a>
+              <a class="dropdown-item lang" data-lang="ja" href="#">日本語</a>
+              <a class="dropdown-item lang" data-lang="ko" href="#">한국어</a>
+              <a class="dropdown-item lang" data-lang="zh-TW" href="#">中文</a>
+            </div>
+          </li>
+          <li class="nav-item ms-auto">
+            <a class="nav-link i18n" href="loggedout.html" id="signout" data-key="signout">Sign out</a>
           </li>
         </ul>
       </div>
@@ -167,7 +184,7 @@
     </nav>
     <ul class="nav languages">
       <li class="nav-item">
-        <span class="nav-link">Click to translate:</span>
+        <span class="nav-link i18n" data-key="translate">Translate into:</span>
       </li>
       <li class="nav-item"><a class="nav-link" href="#de">Deutsch</a></li>
       <li class="nav-item"><a class="nav-link" href="#es">Español</a></li>
@@ -181,6 +198,18 @@
       
     </div>
     <script>
+      if (!i) {
+        Internationalize.init(owner, repo, branch).then(internationalize => {
+          i = internationalize;
+          i.setup();
+        });
+      }
+      document.querySelectorAll('.lang').forEach(elt => {
+        elt.addEventListener('click', event => {
+          i.setLang(elt.getAttribute('data-lang'));
+          return false;
+        });
+      });
       document.querySelectorAll('.languages a').forEach(function(elt){
         elt.addEventListener('click', function(event) {
           toggleEdit(elt.getAttribute('href'));
@@ -190,10 +219,10 @@
       // Set up Save button
       document.getElementById('commit').addEventListener('click', ev => {
         ev.target.setAttribute('disabled','');
-        ev.target.innerHTML = 'Saving...';
+        ev.target.innerHTML = i.gloss('saving');
         t.saveToXML(codemirrors);
         try {
-          t.commit(params.get('edit'),t.content(),`Saving ${params.get('edit')}`).then(commit => {
+          API.commit(params.get('edit'),t.content(),`Saving ${params.get('edit')}`).then(commit => {
             if (!commit.message) {
               window.sessionStorage.setItem('head', commit.sha);
               ev.target.innerHTML = 'Save';
@@ -211,20 +240,20 @@
       });
       // Set up Submit button
       document.getElementById('createpr').addEventListener('click', ev => {
-        ev.target.innerHTML = 'Submitting...';
+        ev.target.innerHTML = i.gloss('submitting');
         ev.target.setAttribute('disabled','');
         t.createPullRequest(`Translation from ${owner}/${repo}`).then(pr => {
           if (!pr.message) {
-            ev.target.innerHTML = "Submit Your Work"
+            ev.target.innerHTML = i.gloss('submit');
           }
         });
       });
-      t.getBranch(owner, repo, branch).then(br => {
-        t.getBranch(owner, repo, 'dev').then(dev => {
+      API.getBranch(owner, repo, branch).then(br => {
+        API.getBranch(owner, repo, 'dev').then(dev => {
           if (dev.commit.sha != br.commit.sha) {
-            t.getPRForBranch(owner, branch).then(prs => {
+            API.getPRForBranch(owner, branch).then(prs => {
               if (prs.length > 0) {
-                document.getElementById('visitpr').innerHTML = `<a class="nav-link" href="https://github.com/TEIC/TEI/pull/${prs[0].number}">Pull Request on GitHub</a>`;
+                document.getElementById('visitpr').innerHTML = `<a class="nav-link" href="https://github.com/TEIC/TEI/pull/${prs[0].number}">${i.gloss('prongithub')}</a>`;
               } else {
                 document.getElementById('createpr').removeAttribute('disabled');
               }

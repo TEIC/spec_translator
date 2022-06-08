@@ -61,6 +61,25 @@ tei-gi::after {
 tei-gi {
   font-family: 'Courier New', Courier, monospace;
 }
+tei-item {
+  display: list-item;
+  list-style: none;
+  padding-left: 1em;
+}
+tei-item:nth-child(odd) {
+  background-color: gainsboro;
+}
+tei-item>tei-gloss {
+  display:block;
+}
+tei-item>tei-desc {
+  display: block;
+}
+tei-item>tei-label {
+  display: block;
+  margin-left: -1em;
+  font-weight: bold;
+}
 pre {
   font-family: "Noto Mono", Consolas, monospace;
 }

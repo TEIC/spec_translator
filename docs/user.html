@@ -7,11 +7,17 @@
   <title>Spec Translator: User</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
-  <script src="js/translator.js" charset="utf-8"></script>
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>   <script src="js/internationalize.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/translator.js"></script>
   <style>
+    body {
+      display: none;
+    }
     ol>li {
-      margin-top: 1em;;
+      margin-top: 1em;
     }
   </style>
 </head>
@@ -23,31 +29,44 @@
       </a>
       <ul class="navbar-nav d-flex w-100">
         <li class="nav-item">
-          <a class="nav-link" href="/">Browse</a>
+          <a class="nav-link i18n" href="/" data-key="browse">Browse</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle i18n" href="#" data-toggle="dropdown" data-key="language" aria-haspopup="true" aria-expanded="false" id="menulang">Language</a>
+          <div class="dropdown-menu" aria-labelledby="menulang">
+            <a class="dropdown-item lang" data-lang="de" href="#">Deutsch</a>
+            <a class="dropdown-item lang" data-lang="en" href="#">English</a>
+            <a class="dropdown-item lang" data-lang="es" href="#">Español</a>
+            <a class="dropdown-item lang" data-lang="fr" href="#">Français</a>
+            <a class="dropdown-item lang" data-lang="it" href="#">Italiano</a>
+            <a class="dropdown-item lang" data-lang="ja" href="#">日本語</a>
+            <a class="dropdown-item lang" data-lang="ko" href="#">한국어</a>
+            <a class="dropdown-item lang" data-lang="zh-TW" href="#">中文</a>
+          </div>
         </li>
         <li class="ms-auto">
-          <a class="nav-link" href="loggedout.html" id="signout">Sign out</a>
+          <a class="nav-link i18n" href="loggedout.html" id="signout" data-key="signout">Sign out</a>
         </li>
       </ul>
     </div>
   </nav>
   <ol>
     <li class="container">
-      <p>Choose or create a repository to save to:</p>
+      <p class="i18n" data-key="chooserepo">Choose or create a repository to save to:</p>
       <form onsubmit="return false" class="row g-3">
         <div class="col-auto">
           <input class="form-control" name="owner" type="text" id="owner">
           <div class="form-text" id="ownertext"></div>
         </div>
-        <div class="col-auto" style="font-size: 2em; line-height: 30px;"> / <span id="TEIRepository" style="color: darkgray;">no repository</span></div>
-        <div class="col-auto"><button type="submit" class="btn btn-primary" id="createFork" disabled>Create a Fork</button></div>
+        <div class="col-auto" style="font-size: 2em; line-height: 30px;"> / <span id="TEIRepository" style="color: darkgray;" class="i18n" data-key="norepo">no repository</span></div>
+        <div class="col-auto"><button type="submit" class="btn btn-primary i18n" id="createFork" disabled data-key="createfork">Create a Fork</button></div>
       </form>
     </li>
     <li class="container">
-      <p>Choose or create a branch to save to:</p>
+      <p class="i18n" data-key="createfork">Choose or create a branch to save to:</p>
       <form onsubmit="return false" class="row g-3">
         <div class="col-auto" style="font-size: 2em; line-height: 30px;;">
-          <span id="owner2">owner</span> / <span id="TEIRepository2">repository</span> /
+          <span id="owner2" class="i18n" data-key="owner">owner</span> / <span id="TEIRepository2" class="i18n" data-key="repo">repository</span> /
         </div>
         <div class="col-auto">
           <input class="form-control" name="branch" list="branches" id="branch" placeholder="branch..." disabled autocomplete="off">
@@ -56,28 +75,35 @@
           </datalist>
         </div>
         <div class="col-auto">
-          <button type="submit" class="btn btn-primary" id="createBranch" disabled>Create a Branch</button>
+          <button type="submit" class="btn btn-primary i18n" id="createBranch" disabled data-key="createbranch">Create a Branch</button>
         </div>
       </form>
       <div></div>
     </li>
-    <li class="container"><a href="/" id="browse" class="btn btn-primary disabled" role="button" aria-disabled="true">Choose a TEI page to translate</a> <span id="rememberedpage"></span></li>
+    <li class="container"><a href="/" id="browse" class="btn btn-primary disabled i18n" role="button" aria-disabled="true" data-key="choosepage">Choose a TEI page to translate</a> <span id="rememberedpage"></span></li>
   </ol>
   
   <script>
-    let t = new Translator({noCETEI: true});
+    const t = new Translator({noCETEI: true});
     if (!t.loggedIn()) {
       window.location = '/auth/login';
     }
+    let i;
+    if (!i) {
+      Internationalize.init('TEIC', 'TEI', 'dev').then(internationalize => {
+        i = internationalize;
+        i.setup();
+      });
+    }
     function checkRepo(owner, repo) {
-      t.getCollaborators(owner, repo).then(data => {
+      API.getCollaborators(owner, repo).then(data => {
           if (data.message) {
             document.getElementById("TEIRepository").innerHTML = 'no repository';
             document.getElementById('createFork').removeAttribute('disabled');
           } else {
             if (data.filter(c => c.login == window.sessionStorage.getItem("user") && c.permissions.push === true).length == 0) {
               with (document.getElementById("TEIRepository")) {
-                innerHTML = "You can't save to this repo.";
+                innerHTML = i.gloss('nosave');
                 setAttribute('style', 'color: red');
               }
             } else {
@@ -90,7 +116,7 @@
     function setupBranches(owner, repo) {
       document.getElementById("branch").value = '';
       document.getElementById("branches").innerHTML = '';
-      t.getUniqueRepoBranches(owner, repo).then(data => {
+      API.getUniqueRepoBranches(owner, repo).then(data => {
           document.getElementById("branches").innerHTML = '';
           data.forEach(branch => {
             let opt = document.createElement('option');
@@ -105,7 +131,7 @@
         });
     }
     function setupRepo() {
-      t.getTEIRepo(owner).then(repository => {
+      API.getTEIRepo(owner).then(repository => {
         if (repository) {
           repo = repository.name;
           window.sessionStorage.setItem('repo', repo);
@@ -118,15 +144,15 @@
             removeAttribute('style');
           }
           document.getElementById('createFork').setAttribute('disabled', '');
-          t.mergeUpstream(owner, repo); // Need some message if this fails
+          API.mergeUpstream(owner, repo); // Need some message if this fails
           setupBranches(owner, repo);
         } else {
           with (document.getElementById("TEIRepository")) {
-            innerHTML = 'no repository';
+            innerHTML = i.gloss('norepo');
             setAttribute('style', 'color: darkgray');
           }
           with (document.getElementById("TEIRepository2")) {
-            innerHTML = 'no repository';
+            innerHTML = i.gloss('norepo');
             setAttribute('style', 'color: darkgray');
           }
           document.getElementById('createFork').removeAttribute('disabled');
@@ -138,7 +164,7 @@
       let rp = window.sessionStorage.getItem('requestedPage');
       if (rp) {
         let name = rp.replace(/.*\/translate.html\?edit=([.a-zA-Z]+)\.xml/, '$1');
-        document.getElementById('rememberedpage').innerHTML = ` or return to <a href="${rp}">${name}</a>.`
+        document.getElementById('rememberedpage').innerHTML = ` ${i.gloss('orgoto')} <a href="${rp}">${name}</a>.`
         window.sessionStorage.removeItem('requestedPage');
       }
     }
@@ -158,7 +184,7 @@
         ev.target.value = owner;
         return;
       }
-      t.checkOwner(ev.target.value).then(result => {
+      API.checkOwner(ev.target.value).then(result => {
         if (result) {
           owner = ev.target.value;
           window.sessionStorage.setItem('owner', owner);
@@ -174,15 +200,15 @@
             }
           }
         } else {
-          document.getElementById('ownertext').innerHTML = 'You are not a member of this organization.','';
+          document.getElementById('ownertext').innerHTML = i.gloss('notmember');
           document.getElementById('createFork').setAttribute('disabled','');
           document.getElementById('owner2').innerHTML = '...';
           with (document.getElementById("TEIRepository")) {
-            innerHTML = 'no repository';
+            innerHTML = i.gloss('norepo');
             setAttribute('style', 'color: darkgray');
           }
           with (document.getElementById("TEIRepository2")) {
-            innerHTML = 'no repository';
+            innerHTML = i.gloss('norepo');
             setAttribute('style', 'color: darkgray');
           }
         }
@@ -194,16 +220,16 @@
     document.getElementById("createFork").addEventListener('click', ev => {
       ev.target.innerHTML = 'Creating Fork...'
       ev.target.setAttribute('disabled','');
-      t.forkTEIRepo(window.sessionStorage.getItem('ownerType') == 'organization' ? owner : null)
+      API.forkTEIRepo(window.sessionStorage.getItem('ownerType') == 'organization' ? owner : null)
         .then(fork => {
           if (fork.message) {
             console.log('Fork failed');
             console.log(fork.message);
           } else {
-            t.deleteUnprotectedBranches(owner, 'TEI');
+            API.deleteUnprotectedBranches(owner, 'TEI');
             repo = fork.name;
             window.sessionStorage.setItem('repo', fork.name);
-            ev.target.innerHTML = 'Create Fork';
+            ev.target.innerHTML = i.gloss('createfork');
             with (document.getElementById("TEIRepository")) {
               innerHTML = repo;
               removeAttribute('style');
@@ -221,22 +247,23 @@
     let branch = window.sessionStorage.getItem('branch');
     if (branch) {
       document.getElementById("branch").value = branch;
+      document.getElementById('browse').classList.remove('disabled');
     }
     document.getElementById("branch").addEventListener('change', ev => {
       if (ev.target.value != '') {
-        t.getBranch(owner, repo, ev.target.value).then(data => {
+        API.getBranch(owner, repo, ev.target.value).then(data => {
           if (data.message) {
             document.getElementById('createBranch').removeAttribute('disabled');
-            document.getElementById('branchtext').innerHTML = "Branch does not exist. Click 'Create a Branch'";
+            document.getElementById('branchtext').innerHTML = i.gloss('nobranch');
           } else {
-            t.mergeUpstream(owner, repo, data.name).then(status => {
+            API.mergeUpstream(owner, repo, data.name).then(status => {
               if (status == 200) {
                 window.sessionStorage.setItem('branch', data.name);
                 window.sessionStorage.setItem('head', data.commit.sha);
                 document.getElementById('browse').classList.remove('disabled');
                 rememberPage();
               } else {
-                document.getElementById('branchtext').innerHTML = `Can't update branch, Visit the <a href="https://github.com/${owner}/${repo}/tree/${data.name}">repo</a> on GitHub to fix it.`;
+                document.getElementById('branchtext').innerHTML = i.gloss('noupdate', i.language, [owner, repo, data.name]);
               }
             });
             document.getElementById('createBranch').setAttribute('disabled','');
@@ -245,19 +272,19 @@
         });
       } else {
         document.getElementById('createBranch').setAttribute('disabled','');
-        document.getElementById('branchtext').innerHTML = 'Enter the name of a new or existing branch';
+        document.getElementById('branchtext').innerHTML = i.gloss('enterbranch');
       }
     });
     document.getElementById('createBranch').addEventListener('click', ev => {
       const branch = document.getElementById("branch").value;
       if (branch) {
         ev.target.setAttribute('disabled','');
-        ev.target.innerHTML = 'Creating branch...';
+        ev.target.innerHTML = i.gloss('creatingbranch');
         document.getElementById('branchtext').innerHTML = '';
-        t.getBranch(owner, repo, 'dev').then(data => {
-            t.createRef(branch, data.commit.sha).then(ref => {
+        API.getBranch(owner, repo, 'dev').then(data => {
+            API.createRef(branch, data.commit.sha).then(ref => {
               if (ref.message) {
-                document.getElementById('branchtext').innerHTML = `Could not create branch ${branch}`; 
+                document.getElementById('branchtext').innerHTML = i.gloss('nocreatebranch', i.language, [branch]); 
               } else {
                 window.sessionStorage.setItem('branch', branch);
                 window.sessionStorage.setItem('head', ref.object.sha);
@@ -265,7 +292,7 @@
                 opt.setAttribute('value', window.sessionStorage.getItem('branch'));
                 opt.innerHTML = window.sessionStorage.getItem('branch');
                 document.getElementById('branches').appendChild(opt);
-                ev.target.innerHTML = 'Create a Branch';
+                ev.target.innerHTML = i.gloss('createbranch');
                 ev.target.setAttribute('disabled','');
                 document.getElementById('browse').classList.remove('disabled');
                 rememberPage();
@@ -278,6 +305,12 @@
     document.getElementById('signout').addEventListener('click', ev => {
       t.logOut();
     })
+    document.querySelectorAll('.lang').forEach(elt => {
+      elt.addEventListener('click', event => {
+        i.setLang(elt.getAttribute('data-lang'));
+        return false;
+      });
+    });
   </script>
 </body>
 </html>
