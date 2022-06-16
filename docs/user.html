@@ -20,6 +20,81 @@
       margin-top: 1em;
     }
   </style>
+  <script>
+    function checkRepo(owner, repo) {
+      API.getCollaborators(owner, repo).then(data => {
+          if (data.message) {
+            document.getElementById("TEIRepository").innerHTML = 'no repository';
+            document.getElementById('createFork').removeAttribute('disabled');
+          } else {
+            if (data.filter(c => c.login == window.sessionStorage.getItem("user") && c.permissions.push === true).length == 0) {
+              with (document.getElementById("TEIRepository")) {
+                innerHTML = i.gloss('nosave');
+                setAttribute('style', 'color: red');
+              }
+            } else {
+              document.getElementById("TEIRepository").removeAttribute('style');
+              setupBranches(owner, repo);
+            }
+          }
+        });
+    }
+    function setupBranches(owner, repo) {
+      document.getElementById("branch").value = '';
+      document.getElementById("branches").innerHTML = '';
+      API.getUniqueRepoBranches(owner, repo).then(data => {
+          document.getElementById("branches").innerHTML = '';
+          data.forEach(branch => {
+            let opt = document.createElement('option');
+            opt.setAttribute('value', branch.name);
+            opt.innerHTML = branch.name;
+            document.getElementById("branches").appendChild(opt);
+            if (window.sessionStorage.getItem('branch') == branch.name) {
+              document.getElementById('branch').value = branch.name;
+            }
+          });
+          document.getElementById('branch').removeAttribute('disabled');
+        });
+    }
+    function setupRepo() {
+      API.getTEIRepo(owner).then(repository => {
+        if (repository) {
+          repo = repository.name;
+          window.sessionStorage.setItem('repo', repo);
+          with (document.getElementById("TEIRepository")) {
+            innerHTML = repo;
+            removeAttribute('style');
+          }
+          with (document.getElementById("TEIRepository2")) {
+            innerHTML = repo;
+            removeAttribute('style');
+          }
+          document.getElementById('createFork').setAttribute('disabled', '');
+          API.mergeUpstream(owner, repo); // Need some message if this fails
+          setupBranches(owner, repo);
+        } else {
+          with (document.getElementById("TEIRepository")) {
+            innerHTML = i.gloss('norepo');
+            setAttribute('style', 'color: darkgray');
+          }
+          with (document.getElementById("TEIRepository2")) {
+            innerHTML = i.gloss('norepo');
+            setAttribute('style', 'color: darkgray');
+          }
+          document.getElementById('createFork').removeAttribute('disabled');
+          document.getElementById('branch').setAttribute('disabled', '');
+        }
+      });
+    }
+    function rememberPage() {
+      let rp = window.sessionStorage.getItem('requestedPage');
+      if (rp) {
+        let name = rp.replace(/.*\/translate.html\?edit=([.a-zA-Z]+)\.xml/, '$1');
+        document.getElementById('rememberedpage').innerHTML = ` ${i.gloss('orgoto')} <a href="${rp}">${name}</a>.`
+        window.sessionStorage.removeItem('requestedPage');
+      }
+    }
+  </script>
 </head>
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #2277bb;">
@@ -95,79 +170,7 @@
         i.setup();
       });
     }
-    function checkRepo(owner, repo) {
-      API.getCollaborators(owner, repo).then(data => {
-          if (data.message) {
-            document.getElementById("TEIRepository").innerHTML = 'no repository';
-            document.getElementById('createFork').removeAttribute('disabled');
-          } else {
-            if (data.filter(c => c.login == window.sessionStorage.getItem("user") && c.permissions.push === true).length == 0) {
-              with (document.getElementById("TEIRepository")) {
-                innerHTML = i.gloss('nosave');
-                setAttribute('style', 'color: red');
-              }
-            } else {
-              document.getElementById("TEIRepository").removeAttribute('style');
-              setupBranches(owner, repo);
-            }
-          }
-        });
-    }
-    function setupBranches(owner, repo) {
-      document.getElementById("branch").value = '';
-      document.getElementById("branches").innerHTML = '';
-      API.getUniqueRepoBranches(owner, repo).then(data => {
-          document.getElementById("branches").innerHTML = '';
-          data.forEach(branch => {
-            let opt = document.createElement('option');
-            opt.setAttribute('value', branch.name);
-            opt.innerHTML = branch.name;
-            document.getElementById("branches").appendChild(opt);
-            if (window.sessionStorage.getItem('branch') == branch.name) {
-              document.getElementById('branch').value = branch.name;
-            }
-          });
-          document.getElementById('branch').removeAttribute('disabled');
-        });
-    }
-    function setupRepo() {
-      API.getTEIRepo(owner).then(repository => {
-        if (repository) {
-          repo = repository.name;
-          window.sessionStorage.setItem('repo', repo);
-          with (document.getElementById("TEIRepository")) {
-            innerHTML = repo;
-            removeAttribute('style');
-          }
-          with (document.getElementById("TEIRepository2")) {
-            innerHTML = repo;
-            removeAttribute('style');
-          }
-          document.getElementById('createFork').setAttribute('disabled', '');
-          API.mergeUpstream(owner, repo); // Need some message if this fails
-          setupBranches(owner, repo);
-        } else {
-          with (document.getElementById("TEIRepository")) {
-            innerHTML = i.gloss('norepo');
-            setAttribute('style', 'color: darkgray');
-          }
-          with (document.getElementById("TEIRepository2")) {
-            innerHTML = i.gloss('norepo');
-            setAttribute('style', 'color: darkgray');
-          }
-          document.getElementById('createFork').removeAttribute('disabled');
-          document.getElementById('branch').setAttribute('disabled', '');
-        }
-      });
-    }
-    function rememberPage() {
-      let rp = window.sessionStorage.getItem('requestedPage');
-      if (rp) {
-        let name = rp.replace(/.*\/translate.html\?edit=([.a-zA-Z]+)\.xml/, '$1');
-        document.getElementById('rememberedpage').innerHTML = ` ${i.gloss('orgoto')} <a href="${rp}">${name}</a>.`
-        window.sessionStorage.removeItem('requestedPage');
-      }
-    }
+    
     // Set up owner info
     let owner = window.sessionStorage.getItem('owner');
     if (!owner) {
