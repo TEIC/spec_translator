@@ -168,152 +168,153 @@
       Internationalize.init('TEIC', 'TEI', 'dev').then(internationalize => {
         i = internationalize;
         i.setup();
+        // Set up owner info
+        let owner = window.sessionStorage.getItem('owner');
+        if (!owner) {
+          owner = window.sessionStorage.getItem('user');
+          window.sessionStorage.setItem('owner', owner);
+          window.sessionStorage.setItem('ownerType', 'user');
+
+        }
+        let repo = window.sessionStorage.getItem('repo');
+        document.getElementById('owner').value = owner;
+        document.getElementById('owner2').innerHTML = owner;
+        document.getElementById('owner').addEventListener('change', ev => {
+          if (ev.target.value == '') {
+            ev.target.value = owner;
+            return;
+          }
+          API.checkOwner(ev.target.value).then(result => {
+            if (result) {
+              owner = ev.target.value;
+              window.sessionStorage.setItem('owner', owner);
+              window.sessionStorage.setItem('ownerType', result);
+              document.getElementById("owner2").innerHTML = owner;
+              document.getElementById('ownertext').innerHTML = '';
+              setupRepo();
+              if (repo) {
+                if (window.sessionStorage.getItem('ownerType') == 'organization') {
+                  checkRepo(owner, repo);
+                } else {
+                  setupBranches(owner, repo);
+                }
+              }
+            } else {
+              document.getElementById('ownertext').innerHTML = i.gloss('notmember');
+              document.getElementById('createFork').setAttribute('disabled','');
+              document.getElementById('owner2').innerHTML = '...';
+              with (document.getElementById("TEIRepository")) {
+                innerHTML = i.gloss('norepo');
+                setAttribute('style', 'color: darkgray');
+              }
+              with (document.getElementById("TEIRepository2")) {
+                innerHTML = i.gloss('norepo');
+                setAttribute('style', 'color: darkgray');
+              }
+            }
+            
+          });
+        });
+        // Set up repo info
+        setupRepo();
+        document.getElementById("createFork").addEventListener('click', ev => {
+          ev.target.innerHTML = 'Creating Fork...'
+          ev.target.setAttribute('disabled','');
+          API.forkTEIRepo(window.sessionStorage.getItem('ownerType') == 'organization' ? owner : null)
+            .then(fork => {
+              if (fork.message) {
+                console.log('Fork failed');
+                console.log(fork.message);
+              } else {
+                API.deleteUnprotectedBranches(owner, 'TEI');
+                repo = fork.name;
+                window.sessionStorage.setItem('repo', fork.name);
+                ev.target.innerHTML = i.gloss('createfork');
+                with (document.getElementById("TEIRepository")) {
+                  innerHTML = repo;
+                  removeAttribute('style');
+                }
+                with (document.getElementById("TEIRepository2")) {
+                  innerHTML = repo;
+                  removeAttribute('style');
+                }
+                document.getElementById('createFork').setAttribute('disabled', '');
+                setupBranches(owner, repo);
+              }
+            });
+        });
+        // Set up branches
+        let branch = window.sessionStorage.getItem('branch');
+        if (branch) {
+          document.getElementById("branch").value = branch;
+          document.getElementById('browse').classList.remove('disabled');
+        }
+        document.getElementById("branch").addEventListener('change', ev => {
+          if (ev.target.value != '') {
+            API.getBranch(owner, repo, ev.target.value).then(data => {
+              if (data.message) {
+                document.getElementById('createBranch').removeAttribute('disabled');
+                document.getElementById('branchtext').innerHTML = i.gloss('nobranch');
+              } else {
+                API.mergeUpstream(owner, repo, data.name).then(status => {
+                  if (status == 200) {
+                    window.sessionStorage.setItem('branch', data.name);
+                    window.sessionStorage.setItem('head', data.commit.sha);
+                    document.getElementById('browse').classList.remove('disabled');
+                    rememberPage();
+                  } else {
+                    document.getElementById('branchtext').innerHTML = i.gloss('noupdate', i.language, [owner, repo, data.name]);
+                  }
+                });
+                document.getElementById('createBranch').setAttribute('disabled','');
+                document.getElementById('branchtext').innerHTML = '';
+              }
+            });
+          } else {
+            document.getElementById('createBranch').setAttribute('disabled','');
+            document.getElementById('branchtext').innerHTML = i.gloss('enterbranch');
+          }
+        });
+        document.getElementById('createBranch').addEventListener('click', ev => {
+          const branch = document.getElementById("branch").value;
+          if (branch) {
+            ev.target.setAttribute('disabled','');
+            ev.target.innerHTML = i.gloss('creatingbranch');
+            document.getElementById('branchtext').innerHTML = '';
+            API.getBranch(owner, repo, 'dev').then(data => {
+                API.createRef(branch, data.commit.sha).then(ref => {
+                  if (ref.message) {
+                    document.getElementById('branchtext').innerHTML = i.gloss('nocreatebranch', i.language, [branch]); 
+                  } else {
+                    window.sessionStorage.setItem('branch', branch);
+                    window.sessionStorage.setItem('head', ref.object.sha);
+                    let opt = document.createElement('option');
+                    opt.setAttribute('value', window.sessionStorage.getItem('branch'));
+                    opt.innerHTML = window.sessionStorage.getItem('branch');
+                    document.getElementById('branches').appendChild(opt);
+                    ev.target.innerHTML = i.gloss('createbranch');
+                    ev.target.setAttribute('disabled','');
+                    document.getElementById('browse').classList.remove('disabled');
+                    rememberPage();
+                  }
+                });
+            });
+          }
+          return false;
+        });
+        document.getElementById('signout').addEventListener('click', ev => {
+          t.logOut();
+        })
+        document.querySelectorAll('.lang').forEach(elt => {
+          elt.addEventListener('click', event => {
+            i.setLang(elt.getAttribute('data-lang'));
+            return false;
+          });
+        });
       });
     }
     
-    // Set up owner info
-    let owner = window.sessionStorage.getItem('owner');
-    if (!owner) {
-      owner = window.sessionStorage.getItem('user');
-      window.sessionStorage.setItem('owner', owner);
-      window.sessionStorage.setItem('ownerType', 'user');
-
-    }
-    let repo = window.sessionStorage.getItem('repo');
-    document.getElementById('owner').value = owner;
-    document.getElementById('owner2').innerHTML = owner;
-    document.getElementById('owner').addEventListener('change', ev => {
-      if (ev.target.value == '') {
-        ev.target.value = owner;
-        return;
-      }
-      API.checkOwner(ev.target.value).then(result => {
-        if (result) {
-          owner = ev.target.value;
-          window.sessionStorage.setItem('owner', owner);
-          window.sessionStorage.setItem('ownerType', result);
-          document.getElementById("owner2").innerHTML = owner;
-          document.getElementById('ownertext').innerHTML = '';
-          setupRepo();
-          if (repo) {
-            if (window.sessionStorage.getItem('ownerType') == 'organization') {
-              checkRepo(owner, repo);
-            } else {
-              setupBranches(owner, repo);
-            }
-          }
-        } else {
-          document.getElementById('ownertext').innerHTML = i.gloss('notmember');
-          document.getElementById('createFork').setAttribute('disabled','');
-          document.getElementById('owner2').innerHTML = '...';
-          with (document.getElementById("TEIRepository")) {
-            innerHTML = i.gloss('norepo');
-            setAttribute('style', 'color: darkgray');
-          }
-          with (document.getElementById("TEIRepository2")) {
-            innerHTML = i.gloss('norepo');
-            setAttribute('style', 'color: darkgray');
-          }
-        }
-        
-      });
-    });
-    // Set up repo info
-    setupRepo();
-    document.getElementById("createFork").addEventListener('click', ev => {
-      ev.target.innerHTML = 'Creating Fork...'
-      ev.target.setAttribute('disabled','');
-      API.forkTEIRepo(window.sessionStorage.getItem('ownerType') == 'organization' ? owner : null)
-        .then(fork => {
-          if (fork.message) {
-            console.log('Fork failed');
-            console.log(fork.message);
-          } else {
-            API.deleteUnprotectedBranches(owner, 'TEI');
-            repo = fork.name;
-            window.sessionStorage.setItem('repo', fork.name);
-            ev.target.innerHTML = i.gloss('createfork');
-            with (document.getElementById("TEIRepository")) {
-              innerHTML = repo;
-              removeAttribute('style');
-            }
-            with (document.getElementById("TEIRepository2")) {
-              innerHTML = repo;
-              removeAttribute('style');
-            }
-            document.getElementById('createFork').setAttribute('disabled', '');
-            setupBranches(owner, repo);
-          }
-        });
-    });
-    // Set up branches
-    let branch = window.sessionStorage.getItem('branch');
-    if (branch) {
-      document.getElementById("branch").value = branch;
-      document.getElementById('browse').classList.remove('disabled');
-    }
-    document.getElementById("branch").addEventListener('change', ev => {
-      if (ev.target.value != '') {
-        API.getBranch(owner, repo, ev.target.value).then(data => {
-          if (data.message) {
-            document.getElementById('createBranch').removeAttribute('disabled');
-            document.getElementById('branchtext').innerHTML = i.gloss('nobranch');
-          } else {
-            API.mergeUpstream(owner, repo, data.name).then(status => {
-              if (status == 200) {
-                window.sessionStorage.setItem('branch', data.name);
-                window.sessionStorage.setItem('head', data.commit.sha);
-                document.getElementById('browse').classList.remove('disabled');
-                rememberPage();
-              } else {
-                document.getElementById('branchtext').innerHTML = i.gloss('noupdate', i.language, [owner, repo, data.name]);
-              }
-            });
-            document.getElementById('createBranch').setAttribute('disabled','');
-            document.getElementById('branchtext').innerHTML = '';
-          }
-        });
-      } else {
-        document.getElementById('createBranch').setAttribute('disabled','');
-        document.getElementById('branchtext').innerHTML = i.gloss('enterbranch');
-      }
-    });
-    document.getElementById('createBranch').addEventListener('click', ev => {
-      const branch = document.getElementById("branch").value;
-      if (branch) {
-        ev.target.setAttribute('disabled','');
-        ev.target.innerHTML = i.gloss('creatingbranch');
-        document.getElementById('branchtext').innerHTML = '';
-        API.getBranch(owner, repo, 'dev').then(data => {
-            API.createRef(branch, data.commit.sha).then(ref => {
-              if (ref.message) {
-                document.getElementById('branchtext').innerHTML = i.gloss('nocreatebranch', i.language, [branch]); 
-              } else {
-                window.sessionStorage.setItem('branch', branch);
-                window.sessionStorage.setItem('head', ref.object.sha);
-                let opt = document.createElement('option');
-                opt.setAttribute('value', window.sessionStorage.getItem('branch'));
-                opt.innerHTML = window.sessionStorage.getItem('branch');
-                document.getElementById('branches').appendChild(opt);
-                ev.target.innerHTML = i.gloss('createbranch');
-                ev.target.setAttribute('disabled','');
-                document.getElementById('browse').classList.remove('disabled');
-                rememberPage();
-              }
-            });
-        });
-      }
-      return false;
-    });
-    document.getElementById('signout').addEventListener('click', ev => {
-      t.logOut();
-    })
-    document.querySelectorAll('.lang').forEach(elt => {
-      elt.addEventListener('click', event => {
-        i.setLang(elt.getAttribute('data-lang'));
-        return false;
-      });
-    });
+    
   </script>
 </body>
 </html>
