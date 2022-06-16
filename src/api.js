@@ -311,7 +311,7 @@ export async function commit(file, content, message) {
   let path = (file.match(/\//) ? file : 'P5/Source/Specs/' + file).replace(/\/[^\/]+$/,'').split('/');
   let tree = await buildTree(trees, path.join('/'), file.replace(/.+\/([^\/]+)$/, "$1"), blob.sha, true);
   let folder = path.pop();
-  while (path.length > 1) {
+  while (path.length > 0) {
     tree = await buildTree(trees, path.join('/'), folder, tree.sha, false);
     folder = path.pop();
   }
