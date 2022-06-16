@@ -136,6 +136,9 @@
     const owner = window.sessionStorage.getItem('owner');
     const repo = window.sessionStorage.getItem('repo');
     const branch = window.sessionStorage.getItem('branch');
+    if (!branch) {
+      window.location = '/user.html';
+    }
     
     let i;
     Internationalize.init(owner, repo, branch).then(internationalize => {
