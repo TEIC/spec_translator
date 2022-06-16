@@ -242,7 +242,7 @@
       document.getElementById('createpr').addEventListener('click', ev => {
         ev.target.innerHTML = i.gloss('submitting');
         ev.target.setAttribute('disabled','');
-        t.createPullRequest(`Translation from ${owner}/${repo}`).then(pr => {
+        API.createPullRequest(`Translation from ${owner}/${repo}`).then(pr => {
           if (!pr.message) {
             ev.target.innerHTML = i.gloss('submit');
           }
