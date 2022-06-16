@@ -90,7 +90,7 @@ class Internationalize {
   }
 
   setup() {
-    let language = window.sessionStorage.getItem('language');
+    let language = window.localStorage.getItem('language');
     if (!language) {
       language = window.navigator.language ? window.navigator.language : 'en';
     }
@@ -115,7 +115,7 @@ class Internationalize {
       }
     });
     this.language = lang;
-    window.sessionStorage.setItem('language', lang);
+    window.localStorage.setItem('language', lang);
   }
 
   supportsLang(lang) {
