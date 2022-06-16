@@ -310,9 +310,10 @@ export async function commit(file, content, message) {
   // get the tree for the new blob's path -> old_blob_tree_sha
   let path = (file.match(/\//) ? file : 'P5/Source/Specs/' + file).replace(/\/[^\/]+$/,'').split('/');
   let tree = await buildTree(trees, path.join('/'), file.replace(/.+\/([^\/]+)$/, "$1"), blob.sha, true);
-  path.pop();
+  let folder = path.pop();
   while (path.length > 1) {
-    tree = await buildTree(trees, path.join('/'), path.pop(), tree.sha, false);
+    tree = await buildTree(trees, path.join('/'), folder, tree.sha, false);
+    folder = path.pop();
   }
   tree = await createTree(branch.commit.commit.tree.sha, path[0], tree.sha, false);
   // create new commit (parents:[head], message, tree:P5_sha) -> new_head
