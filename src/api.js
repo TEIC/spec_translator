@@ -315,7 +315,7 @@ export async function commit(file, content, message) {
     tree = await buildTree(trees, path.join('/'), folder, tree.sha, false);
     folder = path.pop();
   }
-  tree = await createTree(branch.commit.commit.tree.sha, path[0], tree.sha, false);
+  tree = await createTree(branch.commit.commit.tree.sha, folder, tree.sha, false);
   // create new commit (parents:[head], message, tree:P5_sha) -> new_head
   const new_head = await createCommit(message, tree.sha, head);
   // update branch ref to new_head
