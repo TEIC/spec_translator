@@ -128,14 +128,15 @@
   </div>
   </div>
   <script>
+    const t = new Translator({noCETEI: true});
     if (!t.loggedIn()) {
       window.location = '/auth/login';
     }
-    
+
     const owner = window.sessionStorage.getItem('owner');
     const repo = window.sessionStorage.getItem('repo');
     const branch = window.sessionStorage.getItem('branch');
-    let t = new Translator({noCETEI: true});
+    
     let i;
     Internationalize.init(owner, repo, branch).then(internationalize => {
       i = internationalize;
