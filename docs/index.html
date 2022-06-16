@@ -128,6 +128,10 @@
   </div>
   </div>
   <script>
+    if (!t.loggedIn()) {
+      window.location = '/auth/login';
+    }
+    
     const owner = window.sessionStorage.getItem('owner');
     const repo = window.sessionStorage.getItem('repo');
     const branch = window.sessionStorage.getItem('branch');
@@ -138,9 +142,6 @@
       i.setup();
     });
 
-    if (!t.loggedIn()) {
-      window.location = '/auth/login';
-    }
     with (document.getElementById('visitrepo')) {
       setAttribute('href',`https://github.com/${owner}/${repo}/tree/${branch}`);
       innerHTML = `${owner}/${repo} on GitHub`;
