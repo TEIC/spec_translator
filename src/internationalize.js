@@ -86,7 +86,7 @@ class Internationalize {
   }
 
   conv(term, lang) {
-    return this.glossary[term][lang]; 
+    return this.glossary[term] ? this.glossary[term][lang] : null; 
   }
 
   setup() {

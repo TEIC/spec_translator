@@ -40,6 +40,9 @@ class Translator {
       if (e.tagName == 'TEI-VALITEM') {
         result += "[@ident='" + e.getAttribute('ident') + "']";
       }
+      if (e.tagName == 'TEI-ATTDEF') {
+        result += "[@ident='" + e.getAttribute('ident') + "']";
+      }
       if (e.hasAttribute("lang")){ 
         result += "[@xml:lang='" + e.getAttribute("lang") + "']"
       }; 
