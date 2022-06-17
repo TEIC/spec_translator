@@ -64,6 +64,7 @@ export async function getBranch(owner, repo, branch) {
   return response.json();
 }
 export async function createRef(ref, sha) {
+  ref = encodeURIComponent(ref);
   const owner = window.sessionStorage.getItem('owner');
   const repo = window.sessionStorage.getItem('repo');
   const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/refs`, {
@@ -77,6 +78,7 @@ export async function createRef(ref, sha) {
   return response.json();
 }
 export async function updateRef(ref, sha) {
+  ref = encodeURIComponent(ref);
   const owner = window.sessionStorage.getItem('owner');
   const repo = window.sessionStorage.getItem('repo');
   const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/refs/heads/${ref}`, {
@@ -118,6 +120,7 @@ export async function deleteUnprotectedBranches(owner, repo) {
   }
 }
 export async function deleteRef(owner, repo, ref) {
+  ref = encodeURIComponent(ref);
   const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/refs/heads/${ref}`, {
     method: 'DELETE',
     headers: {
@@ -144,7 +147,7 @@ export async function mergeUpstream(owner, repo, branch='dev') {
   return response.status;
 }
 export async function getBranches(owner, repo) {
-  const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/branches`,
+  const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/branches?per_page=100`,
     { headers: {
       'Accept': 'application/vnd.github.v3+json',
       'Authorization': 'token ' + window.sessionStorage.getItem('token')

@@ -64,10 +64,12 @@
           window.sessionStorage.setItem('repo', repo);
           with (document.getElementById("TEIRepository")) {
             innerHTML = repo;
+            classList.remove('i18n');
             removeAttribute('style');
           }
           with (document.getElementById("TEIRepository2")) {
             innerHTML = repo;
+            classList.remove('i18n');
             removeAttribute('style');
           }
           document.getElementById('createFork').setAttribute('disabled', '');
@@ -75,11 +77,15 @@
           setupBranches(owner, repo);
         } else {
           with (document.getElementById("TEIRepository")) {
-            innerHTML = i.gloss('norepo');
+            if (classList.contains('i18n')) {
+              innerHTML = i.gloss('norepo');
+            }
             setAttribute('style', 'color: darkgray');
           }
           with (document.getElementById("TEIRepository2")) {
-            innerHTML = i.gloss('norepo');
+            if (classList.contains('i18n')) {
+              innerHTML = i.gloss('norepo');
+            }
             setAttribute('style', 'color: darkgray');
           }
           document.getElementById('createFork').removeAttribute('disabled');
@@ -139,7 +145,7 @@
       </form>
     </li>
     <li class="container">
-      <p class="i18n" data-key="createfork">Choose or create a branch to save to:</p>
+      <p class="i18n" data-key="choosebranch">Choose or create a branch to save to:</p>
       <form onsubmit="return false" class="row g-3">
         <div class="col-auto" style="font-size: 2em; line-height: 30px;;">
           <span id="owner2" class="i18n" data-key="owner">owner</span> / <span id="TEIRepository2" class="i18n" data-key="repo">repository</span> /
@@ -178,7 +184,12 @@
       }
       repo = window.sessionStorage.getItem('repo');
       document.getElementById('owner').value = owner;
-      document.getElementById('owner2').innerHTML = owner;
+      with (document.getElementById('owner2')) {
+        innerHTML = owner;
+        classList.remove('i18n');
+      }
+      
+
       document.getElementById('owner').addEventListener('change', ev => {
         if (ev.target.value == '') {
           ev.target.value = owner;
@@ -186,18 +197,25 @@
         }
         API.checkOwner(ev.target.value).then(result => {
           if (result) {
-            owner = ev.target.value;
-            window.sessionStorage.setItem('owner', owner);
-            window.sessionStorage.setItem('ownerType', result);
-            document.getElementById("owner2").innerHTML = owner;
-            document.getElementById('ownertext').innerHTML = '';
-            setupRepo();
-            if (repo) {
-              if (window.sessionStorage.getItem('ownerType') == 'organization') {
-                checkRepo(owner, repo);
-              } else {
-                setupBranches(owner, repo);
+            if (result == 'organization' || (result == 'user' && ev.target.value == window.sessionStorage.getItem('user'))) {
+              owner = ev.target.value;
+              window.sessionStorage.setItem('owner', owner);
+              window.sessionStorage.setItem('ownerType', result);
+              with (document.getElementById('owner2')) {
+                innerHTML = owner;
+                classList.remove('i18n');
               }
+              document.getElementById('ownertext').innerHTML = '';
+              setupRepo();
+              if (repo) {
+                if (window.sessionStorage.getItem('ownerType') == 'organization') {
+                  checkRepo(owner, repo);
+                } else {
+                  setupBranches(owner, repo);
+                }
+              }
+            } else { //no-op if they put in another username
+              ev.target.value = owner;
             }
           } else {
             document.getElementById('ownertext').innerHTML = i.gloss('notmember');
@@ -205,10 +223,12 @@
             document.getElementById('owner2').innerHTML = '...';
             with (document.getElementById("TEIRepository")) {
               innerHTML = i.gloss('norepo');
+              classList.add('i18n');
               setAttribute('style', 'color: darkgray');
             }
             with (document.getElementById("TEIRepository2")) {
               innerHTML = i.gloss('norepo');
+              classList.add('i18n');
               setAttribute('style', 'color: darkgray');
             }
           }
@@ -232,10 +252,12 @@
               ev.target.innerHTML = i.gloss('createfork');
               with (document.getElementById("TEIRepository")) {
                 innerHTML = repo;
+                classList.remove('i18n');
                 removeAttribute('style');
               }
               with (document.getElementById("TEIRepository2")) {
                 innerHTML = repo;
+                classList.remove('i18n');
                 removeAttribute('style');
               }
               document.getElementById('createFork').setAttribute('disabled', '');
