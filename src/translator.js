@@ -37,10 +37,7 @@ class Translator {
       if (e.tagName == 'TEI-ITEM') {
         result += "[tei:label='" + e.firstElementChild.innerText + "']";
       }
-      if (e.tagName == 'TEI-VALITEM') {
-        result += "[@ident='" + e.getAttribute('ident') + "']";
-      }
-      if (e.tagName == 'TEI-ATTDEF') {
+      if (e.hasAttribute('ident')) {
         result += "[@ident='" + e.getAttribute('ident') + "']";
       }
       if (e.hasAttribute("lang")){ 

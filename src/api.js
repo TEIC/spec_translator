@@ -130,11 +130,7 @@ export async function deleteRef(owner, repo, ref) {
   });
   return response.ok;
 }
-// TODO: Could potentially force this if there's a merge conflict.
-// 1) Get spec_lists.json from TEIC/TEI:dev
-// 2) Overwrite it in current branch
-// 3) Redo the merge
-// 4) Put the old spec_lists back
+// Merge upstream repo, fixing common merge conflict if it occurs
 export async function mergeUpstream(owner, repo, branch='dev') {
   const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/merge-upstream`,
     { method: 'POST',
@@ -144,6 +140,20 @@ export async function mergeUpstream(owner, repo, branch='dev') {
       },
       body: `{"branch":"${branch}"}`
     });
+  if (response.status == 409) { // 
+    const spec_lists = await getBlobContent('TEIC', 'TEI', 'dev', 'P5/spec_lists.json');
+    const commit = await commit('P5/spec_lists.json', spec_lists, 'TEI spec_lists.json file.');
+    window.sessionStorage.setItem('head', commit.sha);
+    const try_again = await fetch(`https://api.github.com/repos/${owner}/${repo}/merge-upstream`,
+    { method: 'POST',
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': 'token ' + window.sessionStorage.getItem('token')
+      },
+      body: `{"branch":"${branch}"}`
+    });
+    return try_again.status;
+  }
   return response.status;
 }
 export async function getBranches(owner, repo) {
@@ -334,6 +344,18 @@ export async function createPullRequest(message) {
       'Authorization': 'token ' + window.sessionStorage.getItem('token')
     },
     body: `{"head":"${owner}:${branch}", "base":"dev", "title":"${message}"}`
+  }));
+  return response.json();
+}
+
+export async function listWorkflows() {
+  const owner = window.sessionStorage.getItem('owner');
+  const repo = window.sessionStorage.getItem('repo');
+  const response = await(fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows`, {
+    headers: {
+      'Accept': 'application/vnd.github.v3+json',
+      'Authorization': 'token ' + window.sessionStorage.getItem('token')
+    }
   }));
   return response.json();
 }

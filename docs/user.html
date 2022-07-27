@@ -73,6 +73,11 @@
             removeAttribute('style');
           }
           document.getElementById('createFork').setAttribute('disabled', '');
+          API.listWorkflows().then(result => {
+            if (result.total_count == 0) {
+              document.getElementById('enableactions').toggleAttribute('hidden');
+            }
+          })
           API.mergeUpstream(owner, repo); // Need some message if this fails
           setupBranches(owner, repo);
         } else {
@@ -144,6 +149,9 @@
         <div class="col-auto"><button type="submit" class="btn btn-primary i18n" id="createFork" disabled data-key="createfork">Create a Fork</button></div>
       </form>
     </li>
+    <li class="container" hidden id="enableactions">
+      <p class="i18n" data-key="workflows">Go to <a href="https://github.com/hcayless/TEI/actions">your GitHub repo</a> and enable workflows.</p>
+    </li>
     <li class="container">
       <p class="i18n" data-key="choosebranch">Choose or create a branch to save to:</p>
       <form onsubmit="return false" class="row g-3">
@@ -189,7 +197,6 @@
         classList.remove('i18n');
       }
       
-
       document.getElementById('owner').addEventListener('change', ev => {
         if (ev.target.value == '') {
           ev.target.value = owner;
@@ -238,7 +245,7 @@
       // Set up repo info
       setupRepo();
       document.getElementById("createFork").addEventListener('click', ev => {
-        ev.target.innerHTML = 'Creating Fork...'
+        ev.target.innerHTML = i.gloss('creatingfork');
         ev.target.setAttribute('disabled','');
         API.forkTEIRepo(window.sessionStorage.getItem('ownerType') == 'organization' ? owner : null)
           .then(fork => {
@@ -250,6 +257,7 @@
               repo = fork.name;
               window.sessionStorage.setItem('repo', fork.name);
               ev.target.innerHTML = i.gloss('createfork');
+              API.enableSpecWorkflow();
               with (document.getElementById("TEIRepository")) {
                 innerHTML = repo;
                 classList.remove('i18n');
