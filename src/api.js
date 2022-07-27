@@ -329,6 +329,10 @@ export async function commit(file, content, message) {
     folder = path.pop();
   }
   tree = await createTree(branch.commit.commit.tree.sha, folder, tree.sha, false);
+  // check that the new tree doesn't match the previous commit's tree
+  if (tree.sha == branch.commit.commit.tree.sha) {
+    return {'sha': branch.commit.sha}; // no-op. Act as if we have a new HEAD.
+  }
   // create new commit (parents:[head], message, tree:P5_sha) -> new_head
   const new_head = await createCommit(message, tree.sha, head);
   // update branch ref to new_head
