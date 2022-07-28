@@ -257,7 +257,6 @@
               repo = fork.name;
               window.sessionStorage.setItem('repo', fork.name);
               ev.target.innerHTML = i.gloss('createfork');
-              API.enableSpecWorkflow();
               with (document.getElementById("TEIRepository")) {
                 innerHTML = repo;
                 classList.remove('i18n');
