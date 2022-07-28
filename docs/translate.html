@@ -72,7 +72,15 @@
             mode: {name: "xml", matchClosing: true}
           }));
         });
-        codemirrors.forEach(cm => cm.setSize(null,200));
+        codemirrors.forEach(cm => {
+          cm.setSize(null,200);
+          cm.on('change', ev => {
+            const save = document.getElementById('commit');
+            if (save.hasAttribute('disabled')) {
+              save.removeAttribute('disabled');
+            }
+          })
+        });
         document.querySelectorAll('textarea').forEach(elt => {
           elt.addEventListener('change', ev => {
             const save = document.getElementById('commit');
@@ -225,7 +233,7 @@
           API.commit(params.get('edit'),t.content(),`Saving ${params.get('edit')}`).then(commit => {
             if (!commit.message) {
               window.sessionStorage.setItem('head', commit.sha);
-              ev.target.innerHTML = 'Save';
+              ev.target.innerHTML = i.gloss('save');
               ev.target.setAttribute('disabled','');
               document.getElementById('createpr').removeAttribute('disabled');
             } else {

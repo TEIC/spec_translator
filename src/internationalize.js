@@ -53,7 +53,7 @@ class Internationalize {
     if (this.conv(term, lang)?.gloss) {
       result = this.conv(term, lang).gloss;
     } else {
-      result = this.conv(term, 'en').gloss ? this.conv(term, 'en').gloss : '';
+      result = this.conv(term, 'en')?.gloss ? this.conv(term, 'en').gloss : '';
     }
     if (params) {
       for (let i = 0; i < params.length; i++) {

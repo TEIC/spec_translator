@@ -92,7 +92,7 @@ class Translator {
       if (this.normalize(enElt.innerHTML) != this.normalize(elt.value)) {
         // match indent level of the translated element, if any
         if (enElt?.previousSibling.nodeType === Node.TEXT_NODE) {
-          let ws = enElt.previousSibling.nodeValue.replace(/.*(\w+)$/, "$1");
+          let ws = enElt.previousSibling.nodeValue.replace(/.*(\s+)$/, "$1");
           enElt.insertAdjacentElement('afterend', this.toTEI(doc, this.teiParent(elt)))
             .insertAdjacentText('beforebegin', ws);
         } else {
