@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>   
+  <script src="js/internationalize.js" charset="utf-8"></script>
+  <style>
+    body {
+      display: none;
+    }
+    .bi-calendar-check {
+      color: green;
+    }
+    .bi-calendar-x {
+      color: red;
+    }
+    .bi-check-lg {
+      color: green;
+    }
+    .bi-x-lg {
+      color: red;
+    }
+    div#content {
+      margin-left: 12vw;
+      margin-right: auto;
+      width: 80vw;
+    }
+    div#links {
+      position: fixed;
+      top: 150px;
+      left: 1vw;
+      width: 10vw;
+      overflow: auto;
+      overflow-wrap: break-word;
+    }
+    div#links a {
+      font-weight: bold;
+      text-decoration: none;
+      padding-left: .75em;
+    }
+  </style>
+  <title>TEI Specification Translator</title>
+</head>
+<body>
+  <nav class="navbar navbar-expand-sm navbar-dark" style="background-color: #2277bb;">
+    <div class="container-fluid justify-content-start">
+      <a href="https://tei-c.org" class="navbar-brand">
+        <img src="css/TEI-logo.png" alt="TEI" height="50">
+      </a>
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link i18n" href="/" data-key="browse">Browse</a>
+        </li>
+        <li class="nav-item" id="user">
+          <a class="nav-link i18n" href="/user.html" id="userlink" data-key="settings">Settings</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link i18n" href="doc_en.html" id="help" data-key="help">Help</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="" id="visitrepo"></a>
+        </li>
+        <li class="nav-item" id="visitpr"></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle i18n" href="#" data-toggle="dropdown" data-key="language" aria-haspopup="true" aria-expanded="false" id="menulang">Language</a>
+          <div class="dropdown-menu" aria-labelledby="menulang">
+            <a class="dropdown-item lang" data-lang="de" href="#">Deutsch</a>
+            <a class="dropdown-item lang" data-lang="en" href="#">English</a>
+            <a class="dropdown-item lang" data-lang="es" href="#">Español</a>
+            <a class="dropdown-item lang" data-lang="fr" href="#">Français</a>
+            <a class="dropdown-item lang" data-lang="it" href="#">Italiano</a>
+            <a class="dropdown-item lang" data-lang="ja" href="#">日本語</a>
+            <a class="dropdown-item lang" data-lang="ko" href="#">한국어</a>
+            <a class="dropdown-item lang" data-lang="zh-TW" href="#">中文</a>
+          </div>
+        </li>
+      </ul>
+    </div>
+    
+  </nav>
+  <div>
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <a class="nav-link active i18n" aria-current="page" href="#elements" data-key="elements">elements</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link i18n" aria-current="page" href="#att_classes" data-key="attrclasses">attribute classes</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link i18n" aria-current="page" href="#model_classes" data-key="modclasses">model classes</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link i18n" aria-current="page" href="#macros" data-key="macros">macros</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link i18n" aria-current="page" href="#datatypes" data-key="datatypes">datatypes</a>
+      </li>
+    </ul>
+    <div id="content">
+      <div id="links"></div>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col" class="i18n" data-key="language">Language</th>
+            <th scope="col">Deutsch</th>
+            <th scope="col">Español</th>
+            <th scope="col">Français</th>
+            <th scope="col">Italiano</th>
+            <th scope="col">日本語</th>
+            <th scope="col">한국어</th>
+            <th scope="col">中文</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+  </div>
+  </div>
+  <script>
+    let i;
+    Internationalize.init().then(internationalize => {
+      i = internationalize;
+      i.setup();
+    });
+
+    let table = document.querySelector('tbody');
+    let specifications = {};
+    function getIcons(lang) {
+      let result = "";
+      if (lang.missing) {
+        result += '<i class="bi-x-lg" aria-label="missing translation" title="missing translation"></i>';
+      } else {
+        result += '<i class="bi-check-lg" aria-label="has all translations" title="has all translations"></i>'
+      }
+      if (lang["out-of-date"]) {
+        result += ' <i class="bi-calendar-x" aria-label="out of date translation" title="out of date translation"></i>';
+      } else {
+        if (!lang.missing) {
+          result += ' <i class="bi-calendar-check" aria-label="translations up to date" title="translations up to date"></i>';
+        }
+      }
+      return result;
+    }
+    function setTable(category) {
+      table.innerHTML = '';
+      let abc = 'T';
+      let links = [];
+      specifications[category].sort((a,b) => a.id > b.id ? 1 : -1).forEach(item => {
+        let link = document.createElement('tr');
+        if (abc !== item.id.substring(0,1)) {
+          abc = item.id.substring(0,1);
+          link.setAttribute('id', abc);
+          links.push(abc);
+        }
+        let linkHTML = "<td><a href=\"https://tei-c.org/release/doc/tei-p5-doc/en/html/ref-" + item.URL.replace(/\.xml/,'.html') + "\">" + item.id + "</a></td>" +
+          "<td> " + getIcons(item.de) +"</td>" +
+          "<td> " + getIcons(item.es) +"</td>" +
+          "<td> " + getIcons(item.fr) +"</td>" +
+          "<td> " + getIcons(item.it) +"</td>" +
+          "<td> " + getIcons(item.ja) +"</td>" +
+          "<td> " + getIcons(item.ko) +"</td>" +
+          "<td> " + getIcons(item["zh-TW"]) +"</td>";
+        link.innerHTML = linkHTML;
+        table.append(link);
+      });
+      document.getElementById('links').innerHTML = '';
+      if ("elements" === category) {
+        let linksEl = document.getElementById('links');
+        links.forEach(link => {
+          let a = document.createElement("a");
+          a.setAttribute('href', `#${link}`);
+          a.innerHTML = link;
+          linksEl.appendChild(a);
+        });
+      } 
+    }
+    fetch('https://raw.githubusercontent.com/TEIC/TEI/dev/P5/spec_lists.json')
+      .then(response => response.json()).then(data => {
+        specifications = data;
+        setTable("elements");
+      });
+    document.querySelectorAll(".nav-tabs a").forEach(link => 
+      link.addEventListener('click', evt => {
+        document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+        evt.target.classList.add('active')
+        setTable(evt.target.getAttribute('href').substring(1));
+    }));
+    document.querySelectorAll('.lang').forEach(elt => {
+        elt.addEventListener('click', event => {
+          i.setLang(elt.getAttribute('data-lang'));
+          return false;
+        });
+      });
+  </script>
+</body>
+</html>
