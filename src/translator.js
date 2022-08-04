@@ -165,12 +165,39 @@ class Translator {
         result.appendChild(dd);
         return result;
       },
+      "classSpec": function(elt) {
+        let result = document.createDocumentFragment();
+        let header = document.createElement("h1");
+        header.innerText = "<" + elt.getAttribute("ident") + ">";
+        result.appendChild(header);
+        let glosses = elt.querySelectorAll("tei-classspec>tei-gloss");
+        for (let i =0; i < glosses.length; i++) {
+          result.appendChild(glosses[i].cloneNode(true));
+        }
+        let descs = elt.querySelectorAll("tei-classspec>tei-desc");
+        for (let i =0; i < descs.length; i++) {
+          result.appendChild(descs[i].cloneNode(true));
+        }
+        let remarks = elt.querySelectorAll("tei-classspec>tei-remarks");
+        remarks.forEach(remark => {
+          result.appendChild(remark.cloneNode(true));
+        });
+        let exempla = elt.querySelectorAll("tei-exemplum");
+        for (let i =0; i < exempla.length; i++) {
+          result.appendChild(exempla[i].cloneNode(true));
+        }
+        remarks = elt.querySelector("tei-exemplum>tei-remarks");
+        if (remarks) {
+          result.appendChild(remarks.cloneNode(true));
+        }
+        return result;
+      },
       "content": function(elt) {
         let result = document.createElement("dl");
         result.innerHTML = "<dt><span class=\"i18n\" data-key=\"contentmodel\">Content model</span></dt><dd><pre>" + this.serialize(elt.querySelector("*"), false, "").replace(/</g, "&lt;") + "</pre></dd>";
         return result;
       },
-      "dataRef": ["<a href=\"$@key\">$@key</a>"],
+      "dataRef": ["<a href=\"translate.html?edit=$@key.xml\">$@key</a>"],
       "datatype": [
         ["[minoccurs][maxoccurs]", function(elt) {
           let result = document.createElement("dl");
@@ -209,6 +236,34 @@ class Translator {
           return result;
         }]
       ],
+      "dataSpec": function(elt) {
+        let result = document.createDocumentFragment();
+        let header = document.createElement("h1");
+        header.innerText = "<" + elt.getAttribute("ident") + ">";
+        result.appendChild(header);
+        let glosses = elt.querySelectorAll("tei-dataspec>tei-gloss");
+        for (let i =0; i < glosses.length; i++) {
+          result.appendChild(glosses[i].cloneNode(true));
+        }
+        let descs = elt.querySelectorAll("tei-dataspec>tei-desc");
+        for (let i =0; i < descs.length; i++) {
+          result.appendChild(descs[i].cloneNode(true));
+        }
+        let remarks = elt.querySelectorAll("tei-dataspec>tei-remarks");
+        remarks.forEach(remark => {
+          result.appendChild(remark.cloneNode(true));
+        });
+        let exempla = elt.querySelectorAll("tei-exemplum");
+        for (let i =0; i < exempla.length; i++) {
+          result.appendChild(exempla[i].cloneNode(true));
+        }
+        remarks = elt.querySelector("tei-exemplum>tei-remarks");
+        if (remarks) {
+          result.appendChild(remarks.cloneNode(true));
+        }
+        result.appendChild(elt.querySelector("tei-content").cloneNode(true));
+        return result;
+      },
       "desc": [
         ["cetei-translate>tei-desc", function(elt){
           let result = document.createElement("form");
@@ -242,7 +297,7 @@ class Translator {
         if (attList) {
           result.appendChild(attList.cloneNode(true));
         }
-        let remarks = elt.querySelectorAll("tei-elementSpec>tei-remarks");
+        let remarks = elt.querySelectorAll("tei-elementspec>tei-remarks");
         remarks.forEach(remark => {
           result.appendChild(remark.cloneNode(true));
         });
