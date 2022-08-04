@@ -76,7 +76,7 @@ class Translator {
     if (result.singleNodeValue) {
       // Remove element if translation has been deleted
       if (elt.value == '') {
-        result.singleNodeValue.parentElement().removeChild(result.singleNodeValue);
+        result.singleNodeValue.parentElement.removeChild(result.singleNodeValue);
       } else {
         // No-op if text hasn't changed
         if (this.normalize(result.singleNodeValue.innerHTML) != this.normalize(elt.value)) {
@@ -90,7 +90,7 @@ class Translator {
       }
       // No-op if text is the same as the en element and the textarea has a code class
       if ((elt.classList.contains('code') && this.normalize(enElt.innerHTML) != this.normalize(elt.value)) 
-          || elt.classList.contains('plain')) {
+          || elt.classList.contains('plain') ) {
         // match indent level of the translated element, if any
         if (enElt?.previousSibling.nodeType === Node.TEXT_NODE) {
           let ws = enElt.previousSibling.nodeValue.replace(/.*(\s+)$/, "$1");
@@ -259,6 +259,11 @@ class Translator {
       },
       "exemplum": ["<dl><dt class=\"i18n\" data-key=\"example\">Example</dt><dd>", "</dd></dl>"],
       "gloss": [
+        ["tei-item>cetei-translate>tei-gloss", function(elt) {
+          let result = document.createElement("form");
+          result.innerHTML = "<textarea class=\"code translate\">" + this.serialize(elt, true).replace(/^( |\t)+/gm, "") + "</textarea>";
+          return result;
+        }],
         ["cetei-translate>tei-gloss", function(elt){
           let result = document.createElement("form");
           result.innerHTML = "<textarea class=\"plain translate\">" + this.serialize(elt, true).replace(/^( |\t)+/gm, "") + "</textarea>";
