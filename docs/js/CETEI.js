@@ -1,1 +1,1070 @@
-var CETEI=function(){"use strict";var e={namespaces:{tei:"http://www.tei-c.org/ns/1.0",teieg:"http://www.tei-c.org/ns/Examples",rng:"http://relaxng.org/ns/structure/1.0"},tei:{eg:["<pre>","</pre>"],ptr:['<a href="$rw@target">$@target</a>'],ref:[["[target]",['<a href="$rw@target">',"</a>"]]],graphic:function(e){let t=new Image;return t.src=this.rw(e.getAttribute("url")),e.hasAttribute("width")&&t.setAttribute("width",e.getAttribute("width")),e.hasAttribute("height")&&t.setAttribute("height",e.getAttribute("height")),t},list:[["[type=gloss]",function(e){let t=document.createElement("dl");for(let i of Array.from(e.children))if(i.nodeType==Node.ELEMENT_NODE){if("tei-label"==i.localName){let e=document.createElement("dt");e.innerHTML=i.innerHTML,t.appendChild(e)}if("tei-item"==i.localName){let e=document.createElement("dd");e.innerHTML=i.innerHTML,t.appendChild(e)}}return t}]],note:[["[place=end]",function(e){this.noteIndex?this.noteIndex++:this.noteIndex=1;let t="_note_"+this.noteIndex,i=document.createElement("a");i.setAttribute("id","src"+t),i.setAttribute("href","#"+t),i.innerHTML=this.noteIndex;let s=document.createElement("sup");s.appendChild(i);let a=this.dom.querySelector("ol.notes");a||((a=document.createElement("ol")).setAttribute("class","notes"),this.dom.appendChild(a));let r=document.createElement("li");return r.id=t,r.innerHTML=e.innerHTML,a.appendChild(r),s}],["_",["(",")"]]],teiHeader:function(e){this.hideContent(e,!1)},title:[["tei-titlestmt>tei-title",function(e){let t=document.createElement("title");t.innerHTML=e.innerText,document.querySelector("head").appendChild(t)}]],cell:[["[cols]",function(e){e.setAttribute("style","grid-column: "+this.getOrdinality(e)+" / span "+e.getAttribute("cols")+";")}]]},teieg:{egXML:function(e){let t=document.createElement("pre"),i=this.serialize(e,!0).replace(/</g,"&lt;"),s=i.match(/^[\t ]+/);return s&&(i=i.replace(new RegExp("^"+s[0],"mg"),"")),t.innerHTML=i,t}}};function t(e,t=!0){if(e.childNodes.length>0){let i=document.createElement("span");e.appendChild(i),i.setAttribute("hidden",""),i.setAttribute("data-original","");for(let t of Array.from(e.childNodes))if(t!==i){if(t.nodeType===Node.ELEMENT_NODE){t.setAttribute("data-processed","");for(let e of t.querySelectorAll("*"))e.setAttribute("data-processed","")}i.appendChild(e.removeChild(t))}if(t)for(let e of Array.from(i.querySelectorAll("*")))e.hasAttribute("id")&&(e.setAttribute("data-origid",e.getAttribute("id")),e.removeAttribute("id"))}}var i=Object.freeze({getOrdinality:function(e,t){let i=1,s=e;for(;s&&null!==s.previousElementSibling&&(!t||s.previousElementSibling.localName==t)&&(i++,(s=s.previousElementSibling).previousElementSibling););return i},copyAndReset:function(e){let t=e=>{let i=e.nodeType===Node.ELEMENT_NODE?document.createElement(e.nodeName):e.cloneNode(!0);if(e.attributes)for(let t of Array.from(e.attributes))"data-processed"!==t.name&&i.setAttribute(t.name,t.value);for(let s of Array.from(e.childNodes))if(s.nodeType==Node.ELEMENT_NODE){if(!e.hasAttribute("data-empty")){if(s.hasAttribute("data-original")){for(let e of Array.from(s.childNodes)){let s=i.appendChild(t(e));s.nodeType===Node.ELEMENT_NODE&&s.hasAttribute("data-origid")&&(s.setAttribute("id",s.getAttribute("data-origid")),s.removeAttribute("data-origid"))}return i}i.appendChild(t(s))}}else i.appendChild(s.cloneNode());return i};return t(e)},first:function(e){return e.replace(/ .*$/,"")},hideContent:t,normalizeURI:function(e){return this.rw(this.first(e))},repeat:function(e,t){let i="";for(let s=0;s<t;s++)i+=e;return i},resolveURI:function(e){let t=this.prefixDefs[e.substring(0,e.indexOf(":"))];return e.replace(new RegExp(t.matchPattern),t.replacementPattern)},getPrefixDef:function(e){return this.prefixDefs[e]},rw:function(e){return e.match(/^(?:http|mailto|file|\/|#).*$/)?e:this.base+this.utilities.first(e)},serialize:function(e,t,i){let s="",a=e=>!/[^\t\n\r ]/.test(e);if(!t&&e.nodeType==Node.ELEMENT_NODE){s+="string"==typeof i&&""!==i?"\n"+i+"<":"<",s+=e.getAttribute("data-origname");let t=e.hasAttribute("data-origatts")?e.getAttribute("data-origatts").split(" "):[];for(let i of Array.from(e.attributes))i.name.startsWith("data-")||["id","lang","class"].includes(i.name)||(s+=" "+t.find(function(e){return e.toLowerCase()==i.name})+'="'+i.value+'"'),"data-xmlns"==i.name&&(s+=' xmlns="'+i.value+'"');e.childNodes.length>0?s+=">":s+="/>"}for(let r of Array.from(e.childNodes))switch(r.nodeType){case Node.ELEMENT_NODE:s+="string"==typeof i?this.serialize(r,!1,i+"  "):this.serialize(r,!1,i);break;case Node.PROCESSING_INSTRUCTION_NODE:s+="<?"+r.nodeValue+"?>";break;case Node.COMMENT_NODE:s+="\x3c!--"+r.nodeValue+"--\x3e";break;default:if(t&&a(r.nodeValue)&&(s+=r.nodeValue.replace(/^\s*\n/,"")),"string"==typeof i&&a(r.nodeValue))break;s+=r.nodeValue}return!t&&e.childNodes.length>0&&(s+="string"==typeof i?"\n"+i+"</":"</",s+=e.getAttribute("data-origname")+">"),s},unEscapeEntities:function(e){return e.replace(/&gt;/,">").replace(/&quot;/,'"').replace(/&apos;/,"'").replace(/&amp;/,"&")}});class s{constructor(t){this.options=t||{},this.addBehaviors=function(e){if(e.namespaces)for(let t of Object.keys(e.namespaces))this.namespaces.has(e.namespaces[t])||Array.from(this.namespaces.values()).includes(t)||this.namespaces.set(e.namespaces[t],t);for(let t of this.namespaces.values())if(e[t])for(let i of Object.keys(e[t]))this.behaviors[`${t}:${i}`]=e[t][i];e.handlers&&console.log("Behavior handlers are no longer used."),e.fallbacks&&console.log("Fallback behaviors are no longer used.")}.bind(this),this.addBehavior=function(e,t,i){let s;if(e===Object(e))for(let t of Object.keys(e))this.namespaces.has(e[t])||(this.namespaces.set(e[t],t),s=t);else s=e;this.behaviors[`${s}:${t}`]=i}.bind(this),this.applyBehaviors=function(){window.customElements?this.define.call(this,this.els):this.fallback.call(this,this.els)}.bind(this),this.removeBehavior=function(e,t){let i;if(e===Object(e))for(let t of Object.keys(e))this.namespaces.has(e[t])||(this.namespaces.set(e[t],t),i=t);else i=e;delete this.behaviors[`${i}:${t}`]}.bind(this),this.utilities={};for(const e of Object.keys(i))["getPrefixDef","rw","resolveURI"].includes(e)?this.utilities[e]=i[e].bind(this):this.utilities[e]=i[e];if(this.els=[],this.namespaces=new Map,this.behaviors={},this.hasStyle=!1,this.prefixDefs=[],this.debug=!0===this.options.debug,this.discardContent=!0===this.options.discardContent,this.options.base)this.base=this.options.base;else try{window&&(this.base=window.location.href.replace(/\/[^\/]*$/,"/"))}catch(e){this.base=""}this.options.omitDefaultBehaviors||this.addBehaviors(e),this.options.ignoreFragmentId&&window&&window.removeEventListener("ceteiceanload",s.restorePosition)}getHTML5(e,t,i){return window&&window.location.href.startsWith(this.base)&&e.indexOf("/")>=0&&(this.base=e.replace(/\/[^\/]*$/,"/")),new Promise(function(t,i){let s=new XMLHttpRequest;s.open("GET",e),s.send(),s.onload=function(){this.status>=200&&this.status<300?t(this.response):i(this.statusText)},s.onerror=function(){i(this.statusText)}}).catch(function(e){console.log("Could not get XML file."),this.debug&&console.log(e)}).then(e=>this.makeHTML5(e,t,i))}makeHTML5(e,t,i){return this.XML_dom=(new DOMParser).parseFromString(e,"text/xml"),this.domToHTML5(this.XML_dom,t,i)}domToHTML5(e,t,i){this.els=function(e,t){const i=e.documentElement;let s=1,a=function(e){return t.has(e.namespaceURI?e.namespaceURI:"")||t.set(e.namespaceURI,"ns"+s++),t.get(e.namespaceURI?e.namespaceURI:"")+":"+e.localName};const r=new Set(Array.from(i.querySelectorAll("*"),a));return r.add(a(i)),r}(e,this.namespaces);let s=t=>{let a;if(this.namespaces.has(t.namespaceURI?t.namespaceURI:"")){let e=this.namespaces.get(t.namespaceURI?t.namespaceURI:"");a=document.createElement(`${e}-${t.localName}`)}else a=document.importNode(t,!1);for(let e of Array.from(t.attributes))"xmlns"==e.name?a.setAttribute("data-xmlns",e.value):a.setAttribute(e.name,e.value),"xml:id"==e.name&&a.setAttribute("id",e.value),"xml:lang"==e.name&&a.setAttribute("lang",e.value),"rendition"==e.name&&a.setAttribute("class",e.value.replace(/#/g,""));if(a.setAttribute("data-origname",t.localName),t.hasAttributes()&&a.setAttribute("data-origatts",t.getAttributeNames().join(" ")),0==t.childNodes.length&&a.setAttribute("data-empty",""),"head"==t.localName){let i=e.evaluate("count(ancestor::*[tei:head])",t,function(e){if("tei"==e)return"http://www.tei-c.org/ns/1.0"},XPathResult.NUMBER_TYPE,null);a.setAttribute("data-level",i.numberValue)}if("tagsDecl"==t.localName){let e=document.createElement("style");for(let i of Array.from(t.childNodes))if(i.nodeType==Node.ELEMENT_NODE&&"rendition"==i.localName&&"css"==i.getAttribute("scheme")){let t="";i.hasAttribute("selector")?(t+=i.getAttribute("selector").replace(/([^#, >]+\w*)/g,"tei-$1").replace(/#tei-/g,"#")+"{\n",t+=i.textContent):(t+="."+i.getAttribute("xml:id")+"{\n",t+=i.textContent),t+="\n}\n",e.appendChild(document.createTextNode(t))}e.childNodes.length>0&&(a.appendChild(e),this.hasStyle=!0)}"prefixDef"==t.localName&&(this.prefixDefs.push(t.getAttribute("ident")),this.prefixDefs[t.getAttribute("ident")]={matchPattern:t.getAttribute("matchPattern"),replacementPattern:t.getAttribute("replacementPattern")});for(let e of Array.from(t.childNodes))e.nodeType==Node.ELEMENT_NODE?a.appendChild(s(e)):a.appendChild(e.cloneNode());return i&&i(a,t),a};if(this.dom=s(e.documentElement),this.utilities.dom=this.dom,this.applyBehaviors(),this.done=!0,!t)return window&&window.dispatchEvent(a),this.dom;t(this.dom,this),window&&window.dispatchEvent(a)}processPage(){var e;this.els=(e=document,Array.from(e.querySelectorAll("*[data-origname]"),e=>e.localName.replace(/(\w+)-.+/,"$1:")+e.getAttribute("data-origname"))),this.applyBehaviors()}unsetNamespace(e){this.namespaces.delete(e)}setBaseUrl(e){this.base=e}append(e,t){let i=this;if(!t)return function(){if(!this.hasAttribute("data-processed")){let t=e.call(i.utilities,this);t&&!i.childExists(this.firstElementChild,t.nodeName)&&i.appendBasic(this,t)}};{let s=e.call(i.utilities,t);s&&!i.childExists(t.firstElementChild,s.nodeName)&&i.appendBasic(t,s)}}appendBasic(e,i){this.discardContent?e.innerHTML="":t(e,!0),e.appendChild(i)}bName(e){return e.tagName.substring(0,e.tagName.indexOf("-")).toLowerCase()+":"+e.getAttribute("data-origname")}childExists(e,t){return!(!e||e.nodeName!=t)||e&&e.nextElementSibling&&this.childExists(e.nextElementSibling,t)}decorator(e){if(Array.isArray(e)&&!Array.isArray(e[0]))return this.applyDecorator(e);let t=this;return function(i){for(let s of e)if(i.matches(s[0])||"_"===s[0])return Array.isArray(s[1])?t.decorator(s[1]).call(this,i):s[1].call(this,i)}}applyDecorator(e){let t=this;return function(i){let s=[];for(let a=0;a<e.length;a++)s.push(t.template(e[a],i));return t.insert(i,s)}}getFallback(e,t){if(e[t])return e[t]instanceof Function?e[t]:decorator(e[t])}getHandler(e,t){if(e[t])return e[t]instanceof Function?this.append(e[t]):this.append(this.decorator(e[t]))}insert(e,t){let i=document.createElement("span");for(let t of Array.from(e.childNodes))t.nodeType!==Node.ELEMENT_NODE||t.hasAttribute("data-processed")||this.processElement(t);if(t[0].match("<[^>]+>")&&t[1]&&t[1].match("<[^>]+>"))i.innerHTML=t[0]+e.innerHTML+(t[1]?t[1]:"");else{i.innerHTML=t[0],i.setAttribute("data-before",t[0].replace(/<[^>]+>/g,"").length);for(let t of Array.from(e.childNodes))i.appendChild(t.cloneNode(!0));t.length>1&&(i.innerHTML+=t[1],i.setAttribute("data-after",t[1].replace(/<[^>]+>/g,"").length))}return i}processElement(e){if(e.hasAttribute("data-origname")&&!e.hasAttribute("data-processed")){let t=this.getFallback(this.bName(e));t&&(this.append(t,e),e.setAttribute("data-processed",""))}for(let t of Array.from(e.childNodes))t.nodeType===Node.ELEMENT_NODE&&this.processElement(t)}tagName(e){return e.includes(":"),e.replace(/:/,"-").toLowerCase()}template(e,t){let i=e;if(e.search(/\$(\w*)(@([a-zA-Z:]+))/)){let s,a=/\$(\w*)@([a-zA-Z:]+)/g;for(;s=a.exec(e);)i=t.hasAttribute(s[2])?s[1]&&this.utilities[s[1]]?i.replace(s[0],this.utilities[s[1]](t.getAttribute(s[2]))):i.replace(s[0],t.getAttribute(s[2])):i.replace(s[0],"")}return i}define(e){for(let t of e)try{let e=this.getHandler(this.behaviors,t);window.customElements.define(this.tagName(t),class extends HTMLElement{constructor(){super(),this.matches(":defined")||(e&&e.call(this),this.setAttribute("data-processed",""))}connectedCallback(){this.hasAttribute("data-processed")||(e&&e.call(this),this.setAttribute("data-processed",""))}})}catch(e){this.debug&&(console.log(tagName(t)+" couldn't be registered or is already registered."),console.log(e))}}fallback(e){for(let t of e){let e=getFallback(this.behaviors,t);if(e)for(let i of Array.from((this.dom&&!this.done?this.dom:document).getElementsByTagName(tagName(t))))i.hasAttribute("data-processed")||append(e,i)}}static savePosition(){window.sessionStorage.setItem(window.location+"-scroll",window.scrollY)}static restorePosition(){if(window.location.hash)setTimeout(function(){let e=document.querySelector(window.decodeURI(window.location.hash));e&&e.scrollIntoView()},100);else{let e;(e=window.sessionStorage.getItem(window.location+"-scroll"))&&setTimeout(function(){window.scrollTo(0,e)},100)}}}try{if(window){window.CETEI=s,window.addEventListener("beforeunload",s.savePosition);var a=new Event("ceteiceanload");window.addEventListener("ceteiceanload",s.restorePosition)}}catch(e){console.log(e)}return s}();
+var CETEI = (function () {
+  'use strict';
+
+  var defaultBehaviors = {
+    "namespaces": {
+      "tei": "http://www.tei-c.org/ns/1.0",
+      "teieg": "http://www.tei-c.org/ns/Examples",
+      "rng": "http://relaxng.org/ns/structure/1.0"
+    },
+    "tei": {
+      "eg": ["<pre>", "</pre>"],
+      // inserts a link inside <ptr> using the @target; the link in the
+      // @href is piped through the rw (rewrite) function before insertion
+      "ptr": ["<a href=\"$rw@target\">$@target</a>"],
+      // wraps the content of the <ref> in an HTML link
+      "ref": [["[target]", ["<a href=\"$rw@target\">", "</a>"]]],
+      "graphic": function (elt) {
+        let content = new Image();
+        content.src = this.rw(elt.getAttribute("url"));
+
+        if (elt.hasAttribute("width")) {
+          content.setAttribute("width", elt.getAttribute("width"));
+        }
+
+        if (elt.hasAttribute("height")) {
+          content.setAttribute("height", elt.getAttribute("height"));
+        }
+
+        return content;
+      },
+      "list": [// will only run on a list where @type="gloss"
+      ["[type=gloss]", function (elt) {
+        let dl = document.createElement("dl");
+
+        for (let child of Array.from(elt.children)) {
+          if (child.nodeType == Node.ELEMENT_NODE) {
+            if (child.localName == "tei-label") {
+              let dt = document.createElement("dt");
+              dt.innerHTML = child.innerHTML;
+              dl.appendChild(dt);
+            }
+
+            if (child.localName == "tei-item") {
+              let dd = document.createElement("dd");
+              dd.innerHTML = child.innerHTML;
+              dl.appendChild(dd);
+            }
+          }
+        }
+
+        return dl;
+      }]],
+      "note": [// Make endnotes
+      ["[place=end]", function (elt) {
+        if (!this.noteIndex) {
+          this["noteIndex"] = 1;
+        } else {
+          this.noteIndex++;
+        }
+
+        let id = "_note_" + this.noteIndex;
+        let link = document.createElement("a");
+        link.setAttribute("id", "src" + id);
+        link.setAttribute("href", "#" + id);
+        link.innerHTML = this.noteIndex;
+        let content = document.createElement("sup");
+        content.appendChild(link);
+        let notes = this.dom.querySelector("ol.notes");
+
+        if (!notes) {
+          notes = document.createElement("ol");
+          notes.setAttribute("class", "notes");
+          this.dom.appendChild(notes);
+        }
+
+        let note = document.createElement("li");
+        note.id = id;
+        note.innerHTML = elt.innerHTML;
+        notes.appendChild(note);
+        return content;
+      }], ["_", ["(", ")"]]],
+      "teiHeader": function (e) {
+        this.hideContent(e, false);
+      },
+      "title": [["tei-titlestmt>tei-title", function (elt) {
+        let title = document.createElement("title");
+        title.innerHTML = elt.innerText;
+        document.querySelector("head").appendChild(title);
+      }]]
+    },
+    "teieg": {
+      "egXML": function (elt) {
+        let pre = document.createElement("pre");
+        let content = this.serialize(elt, true).replace(/</g, "&lt;");
+        let ws = content.match(/^[\t ]+/);
+
+        if (ws) {
+          content = content.replace(new RegExp("^" + ws[0], "mg"), "");
+        }
+
+        pre.innerHTML = content;
+        return pre;
+      }
+    }
+  };
+
+  function getOrdinality(elt, name) {
+    let pos = 1;
+    let e = elt;
+
+    while (e && e.previousElementSibling !== null && (name ? e.previousElementSibling.localName == name : true)) {
+      pos++;
+      e = e.previousElementSibling;
+
+      if (!e.previousElementSibling) {
+        break;
+      }
+    }
+
+    return pos;
+  }
+  /* 
+    Performs a deep copy operation of the input node while stripping
+    out child elements introduced by CETEIcean.
+  */
+
+  function copyAndReset(node) {
+    let clone = n => {
+      let result = n.nodeType === Node.ELEMENT_NODE ? document.createElement(n.nodeName) : n.cloneNode(true);
+
+      if (n.attributes) {
+        for (let att of Array.from(n.attributes)) {
+          if (att.name !== "data-processed") {
+            result.setAttribute(att.name, att.value);
+          }
+        }
+      }
+
+      for (let nd of Array.from(n.childNodes)) {
+        if (nd.nodeType == Node.ELEMENT_NODE) {
+          if (!n.hasAttribute("data-empty")) {
+            if (nd.hasAttribute("data-original")) {
+              for (let childNode of Array.from(nd.childNodes)) {
+                let child = result.appendChild(clone(childNode));
+
+                if (child.nodeType === Node.ELEMENT_NODE && child.hasAttribute("data-origid")) {
+                  child.setAttribute("id", child.getAttribute("data-origid"));
+                  child.removeAttribute("data-origid");
+                }
+              }
+
+              return result;
+            } else {
+              result.appendChild(clone(nd));
+            }
+          }
+        } else {
+          result.appendChild(nd.cloneNode());
+        }
+      }
+
+      return result;
+    };
+
+    return clone(node);
+  }
+  /* 
+    Given a space-separated list of URLs (e.g. in a ref with multiple
+    targets), returns just the first one.
+  */
+
+  function first(urls) {
+    return urls.replace(/ .*$/, "");
+  }
+  /* 
+    Wraps the content of the element parameter in a <span data-original>
+    with display set to "none".
+  */
+
+  function hideContent(elt, rewriteIds = true) {
+    if (elt.childNodes.length > 0) {
+      let hidden = document.createElement("span");
+      elt.appendChild(hidden);
+      hidden.setAttribute("hidden", "");
+      hidden.setAttribute("data-original", "");
+
+      for (let node of Array.from(elt.childNodes)) {
+        if (node !== hidden) {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            node.setAttribute("data-processed", "");
+
+            for (let e of node.querySelectorAll("*")) {
+              e.setAttribute("data-processed", "");
+            }
+          }
+
+          hidden.appendChild(elt.removeChild(node));
+        }
+      }
+
+      if (rewriteIds) {
+        for (let e of Array.from(hidden.querySelectorAll("*"))) {
+          if (e.hasAttribute("id")) {
+            e.setAttribute("data-origid", e.getAttribute("id"));
+            e.removeAttribute("id");
+          }
+        }
+      }
+    }
+  }
+  function normalizeURI(urls) {
+    return this.rw(this.first(urls));
+  }
+  /* 
+    Takes a string and a number and returns the original string
+    printed that number of times.
+  */
+
+  function repeat(str, times) {
+    let result = "";
+
+    for (let i = 0; i < times; i++) {
+      result += str;
+    }
+
+    return result;
+  }
+  /* 
+    Resolves URIs that use TEI prefixDefs into full URIs.
+    See https://www.tei-c.org/release/doc/tei-p5-doc/en/html/ref-prefixDef.html
+  */
+
+  function resolveURI(uri) {
+    let prefixdef = this.prefixDefs[uri.substring(0, uri.indexOf(":"))];
+    return uri.replace(new RegExp(prefixdef["matchPattern"]), prefixdef["replacementPattern"]);
+  }
+  /*
+    Convenience function for getting prefix definitions, Takes a prefix
+    and returns an object with "matchPattern" and "replacementPattern"
+    keys.
+  */
+
+  function getPrefixDef(prefix) {
+    return this.prefixDefs[prefix];
+  }
+  /* 
+    Takes a relative URL and rewrites it based on the base URL of the
+    HTML document
+  */
+
+  function rw(url) {
+    if (!url.match(/^(?:http|mailto|file|\/|#).*$/)) {
+      return this.base + this.utilities.first(url);
+    } else {
+      return url;
+    }
+  }
+  /* 
+    Takes an element and serializes it to an XML string or, if the stripElt
+    parameter is set, serializes the element's content. The ws parameter, if
+    set, will switch on minimal "pretty-printing" and indenting of the serialized
+    result.
+  */
+
+  function serialize(el, stripElt, ws) {
+    let str = "";
+
+    let ignorable = txt => {
+      return !/[^\t\n\r ]/.test(txt);
+    };
+
+    if (!stripElt && el.nodeType == Node.ELEMENT_NODE) {
+      if (typeof ws === "string" && ws !== "") {
+        str += "\n" + ws + "<";
+      } else {
+        str += "<";
+      }
+
+      str += el.getAttribute("data-origname"); // HTML5 lowercases all attribute names; @data-origatts contains the original names
+
+      let attrNames = el.hasAttribute("data-origatts") ? el.getAttribute("data-origatts").split(" ") : [];
+
+      for (let attr of Array.from(el.attributes)) {
+        if (!attr.name.startsWith("data-") && !["id", "lang", "class"].includes(attr.name)) {
+          str += " " + attrNames.find(function (e) {
+            return e.toLowerCase() == attr.name;
+          }) + "=\"" + attr.value + "\"";
+        }
+
+        if (attr.name == "data-xmlns") {
+          str += " xmlns=\"" + attr.value + "\"";
+        }
+      }
+
+      if (el.childNodes.length > 0) {
+        str += ">";
+      } else {
+        str += "/>";
+      }
+    } //TODO: Be smarter about skipping generated content with hidden original
+
+
+    for (let node of Array.from(el.childNodes)) {
+      switch (node.nodeType) {
+        case Node.ELEMENT_NODE:
+          if (typeof ws === "string") {
+            str += this.serialize(node, false, ws + "  ");
+          } else {
+            str += this.serialize(node, false, ws);
+          }
+
+          break;
+
+        case Node.PROCESSING_INSTRUCTION_NODE:
+          str += "<?" + node.nodeValue + "?>";
+          break;
+
+        case Node.COMMENT_NODE:
+          str += "<!--" + node.nodeValue + "-->";
+          break;
+
+        default:
+          if (stripElt && ignorable(node.nodeValue)) {
+            str += node.nodeValue.replace(/^\s*\n/, "");
+          }
+
+          if (typeof ws === "string" && ignorable(node.nodeValue)) {
+            break;
+          }
+
+          str += node.nodeValue;
+      }
+    }
+
+    if (!stripElt && el.childNodes.length > 0) {
+      if (typeof ws === "string") {
+        str += "\n" + ws + "</";
+      } else {
+        str += "</";
+      }
+
+      str += el.getAttribute("data-origname") + ">";
+    }
+
+    return str;
+  }
+  function unEscapeEntities(str) {
+    return str.replace(/&gt;/, ">").replace(/&quot;/, "\"").replace(/&apos;/, "'").replace(/&amp;/, "&");
+  }
+
+  var utilities = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    getOrdinality: getOrdinality,
+    copyAndReset: copyAndReset,
+    first: first,
+    hideContent: hideContent,
+    normalizeURI: normalizeURI,
+    repeat: repeat,
+    resolveURI: resolveURI,
+    getPrefixDef: getPrefixDef,
+    rw: rw,
+    serialize: serialize,
+    unEscapeEntities: unEscapeEntities
+  });
+
+  /* 
+    Add a user-defined set of behaviors to CETEIcean's processing
+    workflow. Added behaviors will override predefined behaviors with the
+    same name.
+  */
+  function addBehaviors(bhvs) {
+    if (bhvs.namespaces) {
+      for (let prefix of Object.keys(bhvs.namespaces)) {
+        if (!this.namespaces.has(bhvs.namespaces[prefix]) && !Array.from(this.namespaces.values()).includes(prefix)) {
+          this.namespaces.set(bhvs.namespaces[prefix], prefix);
+        }
+      }
+    }
+
+    for (let prefix of this.namespaces.values()) {
+      if (bhvs[prefix]) {
+        for (let b of Object.keys(bhvs[prefix])) {
+          this.behaviors[`${prefix}:${b}`] = bhvs[prefix][b];
+        }
+      }
+    }
+
+    if (bhvs["functions"]) {
+      for (let fn of Object.keys(bhvs["functions"])) {
+        this.utilities[fn] = bhvs["functions"][fn];
+      }
+    }
+
+    if (bhvs["handlers"]) {
+      console.log("Behavior handlers are no longer used.");
+    }
+
+    if (bhvs["fallbacks"]) {
+      console.log("Fallback behaviors are no longer used.");
+    }
+  }
+  /* 
+    Adds or replaces an individual behavior. Takes a namespace prefix or namespace definition,
+    the element name, and the behavior. E.g.
+    addBehavior("tei", "add", ["`","`"]) for an already-declared namespace or
+    addBehavior({"doc": "http://docbook.org/ns/docbook"}, "note", ["[","]"]) for a new one
+  */
+
+  function addBehavior(ns, element, b) {
+    let p;
+
+    if (ns === Object(ns)) {
+      for (let prefix of Object.keys(ns)) {
+        if (!this.namespaces.has(ns[prefix])) {
+          this.namespaces.set(ns[prefix], prefix);
+          p = prefix;
+        }
+      }
+    } else {
+      p = ns;
+    }
+
+    this.behaviors[`${p}:${element}`] = b;
+  }
+  /*
+    Removes a previously-defined or default behavior. Takes a namespace prefix or namespace definition
+    and the element name.
+  */
+
+  function removeBehavior(ns, element) {
+    let p;
+
+    if (ns === Object(ns)) {
+      for (let prefix of Object.keys(ns)) {
+        if (!this.namespaces.has(ns[prefix])) {
+          this.namespaces.set(ns[prefix], prefix);
+          p = prefix;
+        }
+      }
+    } else {
+      p = ns;
+    }
+
+    delete this.behaviors[`${p}:${element}`];
+  }
+
+  function learnElementNames(XML_dom, namespaces) {
+    const root = XML_dom.documentElement;
+    let i = 1;
+
+    let qname = function (e) {
+      if (!namespaces.has(e.namespaceURI ? e.namespaceURI : "")) {
+        namespaces.set(e.namespaceURI, "ns" + i++);
+      }
+
+      return namespaces.get(e.namespaceURI ? e.namespaceURI : "") + ":" + e.localName;
+    };
+
+    const els = new Set(Array.from(root.querySelectorAll("*"), qname)); // Add the root element to the array
+
+    els.add(qname(root));
+    return els;
+  }
+  function learnCustomElementNames(HTML_dom) {
+    return Array.from(HTML_dom.querySelectorAll("*[data-origname]"), e => e.localName.replace(/(\w+)-.+/, "$1:") + e.getAttribute("data-origname"));
+  }
+
+  class CETEI {
+    constructor(options) {
+      this.options = options ? options : {}; // Bind methods
+
+      this.addBehaviors = addBehaviors.bind(this);
+      this.addBehavior = addBehavior.bind(this);
+      this.removeBehavior = removeBehavior.bind(this); // Bind selected utilities
+
+      this.utilities = {};
+
+      for (const u of Object.keys(utilities)) {
+        if (["getPrefixDef", "rw", "resolveURI"].includes(u)) {
+          this.utilities[u] = utilities[u].bind(this);
+        } else {
+          this.utilities[u] = utilities[u];
+        }
+      } // Set properties
+
+
+      this.els = [];
+      this.namespaces = new Map();
+      this.behaviors = {};
+      this.hasStyle = false;
+      this.prefixDefs = [];
+      this.debug = this.options.debug === true ? true : false;
+      this.discardContent = this.options.discardContent === true ? true : false;
+
+      if (this.options.base) {
+        this.base = this.options.base;
+      } else {
+        try {
+          if (window) {
+            this.base = window.location.href.replace(/\/[^\/]*$/, "/");
+          }
+        } catch (e) {
+          this.base = "";
+        }
+      }
+
+      if (!this.options.omitDefaultBehaviors) {
+        this.addBehaviors(defaultBehaviors);
+      }
+
+      if (this.options.ignoreFragmentId) {
+        if (window) {
+          window.removeEventListener("ceteiceanload", CETEI.restorePosition);
+        }
+      }
+    }
+    /* 
+      Returns a Promise that fetches an XML source document from the URL
+      provided in the first parameter and then calls the makeHTML5 method
+      on the returned document.
+    */
+
+
+    getHTML5(XML_url, callback, perElementFn) {
+      if (window && window.location.href.startsWith(this.base) && XML_url.indexOf("/") >= 0) {
+        this.base = XML_url.replace(/\/[^\/]*$/, "/");
+      } // Get XML from XML_url and create a promise
+
+
+      let promise = new Promise(function (resolve, reject) {
+        let client = new XMLHttpRequest();
+        client.open('GET', XML_url);
+        client.send();
+
+        client.onload = function () {
+          if (this.status >= 200 && this.status < 300) {
+            resolve(this.response);
+          } else {
+            reject(this.statusText);
+          }
+        };
+
+        client.onerror = function () {
+          reject(this.statusText);
+        };
+      }).catch(function (reason) {
+        console.log("Could not get XML file.");
+
+        if (this.debug) {
+          console.log(reason);
+        }
+      });
+      return promise.then(XML => {
+        return this.makeHTML5(XML, callback, perElementFn);
+      });
+    }
+    /* 
+      Converts the supplied XML string into HTML5 Custom Elements. If a callback
+      function is supplied, calls it on the result.
+    */
+
+
+    makeHTML5(XML, callback, perElementFn) {
+      // XML is assumed to be a string
+      this.XML_dom = new DOMParser().parseFromString(XML, "text/xml");
+      return this.domToHTML5(this.XML_dom, callback, perElementFn);
+    }
+    /* 
+      Converts the supplied XML DOM into HTML5 Custom Elements. If a callback
+      function is supplied, calls it on the result.
+    */
+
+
+    domToHTML5(XML_dom, callback, perElementFn) {
+      this.els = learnElementNames(XML_dom, this.namespaces);
+
+      let convertEl = el => {
+        // Elements with defined namespaces get the prefix mapped to that element. All others keep
+        // their namespaces and are copied as-is.
+        let newElement;
+
+        if (this.namespaces.has(el.namespaceURI ? el.namespaceURI : "")) {
+          let prefix = this.namespaces.get(el.namespaceURI ? el.namespaceURI : "");
+          newElement = document.createElement(`${prefix}-${el.localName}`);
+        } else {
+          newElement = document.importNode(el, false);
+        } // Copy attributes; @xmlns, @xml:id, @xml:lang, and
+        // @rendition get special handling.
+
+
+        for (let att of Array.from(el.attributes)) {
+          if (att.name == "xmlns") {
+            //Strip default namespaces, but hang on to the values
+            newElement.setAttribute("data-xmlns", att.value);
+          } else {
+            newElement.setAttribute(att.name, att.value);
+          }
+
+          if (att.name == "xml:id") {
+            newElement.setAttribute("id", att.value);
+          }
+
+          if (att.name == "xml:lang") {
+            newElement.setAttribute("lang", att.value);
+          }
+
+          if (att.name == "rendition") {
+            newElement.setAttribute("class", att.value.replace(/#/g, ""));
+          }
+        } // Preserve element name so we can use it later
+
+
+        newElement.setAttribute("data-origname", el.localName);
+
+        if (el.hasAttributes()) {
+          newElement.setAttribute("data-origatts", el.getAttributeNames().join(" "));
+        } // If element is empty, flag it
+
+
+        if (el.childNodes.length == 0) {
+          newElement.setAttribute("data-empty", "");
+        } // <head> elements need to know their level
+
+
+        if (el.localName == "head") {
+          let level = XML_dom.evaluate("count(ancestor::*[tei:head])", el, function (ns) {
+            if (ns == "tei") return "http://www.tei-c.org/ns/1.0";
+          }, XPathResult.NUMBER_TYPE, null);
+          newElement.setAttribute("data-level", level.numberValue);
+        } // Turn <rendition scheme="css"> elements into HTML styles
+
+
+        if (el.localName == "tagsDecl") {
+          let style = document.createElement("style");
+
+          for (let node of Array.from(el.childNodes)) {
+            if (node.nodeType == Node.ELEMENT_NODE && node.localName == "rendition" && node.getAttribute("scheme") == "css") {
+              let rule = "";
+
+              if (node.hasAttribute("selector")) {
+                //rewrite element names in selectors
+                rule += node.getAttribute("selector").replace(/([^#, >]+\w*)/g, "tei-$1").replace(/#tei-/g, "#") + "{\n";
+                rule += node.textContent;
+              } else {
+                rule += "." + node.getAttribute("xml:id") + "{\n";
+                rule += node.textContent;
+              }
+
+              rule += "\n}\n";
+              style.appendChild(document.createTextNode(rule));
+            }
+          }
+
+          if (style.childNodes.length > 0) {
+            newElement.appendChild(style);
+            this.hasStyle = true;
+          }
+        } // Get prefix definitions
+
+
+        if (el.localName == "prefixDef") {
+          this.prefixDefs.push(el.getAttribute("ident"));
+          this.prefixDefs[el.getAttribute("ident")] = {
+            "matchPattern": el.getAttribute("matchPattern"),
+            "replacementPattern": el.getAttribute("replacementPattern")
+          };
+        }
+
+        for (let node of Array.from(el.childNodes)) {
+          if (node.nodeType == Node.ELEMENT_NODE) {
+            newElement.appendChild(convertEl(node));
+          } else {
+            newElement.appendChild(node.cloneNode());
+          }
+        }
+
+        if (perElementFn) {
+          perElementFn(newElement, el);
+        }
+
+        return newElement;
+      };
+
+      this.dom = convertEl(XML_dom.documentElement);
+      this.utilities.dom = this.dom;
+      this.applyBehaviors();
+      this.done = true;
+
+      if (callback) {
+        callback(this.dom, this);
+
+        if (window) {
+          window.dispatchEvent(ceteiceanLoad);
+        }
+      } else {
+        if (window) {
+          window.dispatchEvent(ceteiceanLoad);
+        }
+
+        return this.dom;
+      }
+    }
+    /*
+      Convenience method for HTML pages containing pre-processed CETEIcean Custom 
+      Elements. Usage:
+        const c = new CETEI();
+        c.processPage();
+    */
+
+
+    processPage() {
+      this.els = learnCustomElementNames(document);
+      this.applyBehaviors();
+    }
+    /* 
+      To change a namespace -> prefix mapping, the namespace must first be 
+      unset. Takes a namespace URI. In order to process a TEI P4 document, e.g.,
+      the TEI namespace must be unset before it can be set to the empty string.
+    */
+
+
+    unsetNamespace(ns) {
+      this.namespaces.delete(ns);
+    }
+    /* 
+      Sets the base URL for the document. Used to rewrite relative links in the
+      XML source (which may be in a completely different location from the HTML
+      wrapper).
+    */
+
+
+    setBaseUrl(base) {
+      this.base = base;
+    }
+    /* 
+    Appends any element returned by the function passed in the first
+    parameter to the element in the second parameter. If the function
+    returns nothing, this is a no-op aside from any side effects caused
+    by the provided function.
+     Called by getHandler() and fallback()
+    */
+
+
+    append(fn, elt) {
+      let self = this;
+
+      if (elt) {
+        let content = fn.call(self.utilities, elt);
+
+        if (content && !self.childExists(elt.firstElementChild, content.nodeName)) {
+          self.appendBasic(elt, content);
+        }
+      } else {
+        return function () {
+          if (!this.hasAttribute("data-processed")) {
+            let content = fn.call(self.utilities, this);
+
+            if (content && !self.childExists(this.firstElementChild, content.nodeName)) {
+              self.appendBasic(this, content);
+            }
+          }
+        };
+      }
+    }
+
+    appendBasic(elt, content) {
+      if (this.discardContent) {
+        elt.innerHTML = "";
+      } else {
+        hideContent(elt, true);
+      }
+
+      elt.appendChild(content);
+    } // Given an element, return its qualified name as defined in a behaviors object
+
+
+    bName(e) {
+      return e.tagName.substring(0, e.tagName.indexOf("-")).toLowerCase() + ":" + e.getAttribute("data-origname");
+    }
+    /* 
+      Private method called by append(). Takes a child element and a name, and recurses through the
+      child's siblings until an element with that name is found, returning true if it is and false if not.
+    */
+
+
+    childExists(elt, name) {
+      if (elt && elt.nodeName == name) {
+        return true;
+      } else {
+        return elt && elt.nextElementSibling && this.childExists(elt.nextElementSibling, name);
+      }
+    }
+    /* 
+      Takes a template in the form of either an array of 1 or 2 
+      strings or an object with CSS selector keys and either functions
+      or arrays as described above. Returns a closure around a function 
+      that can be called in the element constructor or applied to an 
+      individual element. An empty array is considered a no-op.
+    
+      Called by the getHandler() and getFallback() methods
+    */
+
+
+    decorator(template) {
+      if (Array.isArray(template) && template.length == 0) {
+        return function (e) {};
+      }
+
+      if (Array.isArray(template) && !Array.isArray(template[0])) {
+        return this.applyDecorator(template);
+      }
+
+      let self = this;
+      return function (elt) {
+        for (let rule of template) {
+          if (elt.matches(rule[0]) || rule[0] === "_") {
+            if (Array.isArray(rule[1])) {
+              return self.decorator(rule[1]).call(this, elt);
+            } else {
+              return rule[1].call(this, elt);
+            }
+          }
+        }
+      };
+    }
+
+    applyDecorator(strings) {
+      let self = this;
+      return function (elt) {
+        let copy = [];
+
+        for (let i = 0; i < strings.length; i++) {
+          copy.push(self.template(strings[i], elt));
+        }
+
+        return self.insert(elt, copy);
+      };
+    }
+    /* 
+      Returns the fallback function for the given element name.
+      Called by fallback().
+    */
+
+
+    getFallback(behaviors, fn) {
+      if (behaviors[fn]) {
+        if (behaviors[fn] instanceof Function) {
+          return behaviors[fn];
+        } else {
+          return decorator(behaviors[fn]);
+        }
+      }
+    }
+    /* 
+      Returns the handler function for the given element name
+      Called by define().
+    */
+
+
+    getHandler(behaviors, fn) {
+      if (behaviors[fn]) {
+        if (behaviors[fn] instanceof Function) {
+          return this.append(behaviors[fn]);
+        } else {
+          return this.append(this.decorator(behaviors[fn]));
+        }
+      }
+    }
+
+    insert(elt, strings) {
+      let span = document.createElement("span");
+
+      for (let node of Array.from(elt.childNodes)) {
+        if (node.nodeType === Node.ELEMENT_NODE && !node.hasAttribute("data-processed")) {
+          this.processElement(node);
+        }
+      } // If we have before and after tags have them parsed by
+      // .innerHTML and then add the content to the resulting child
+
+
+      if (strings[0].match("<[^>]+>") && strings[1] && strings[1].match("<[^>]+>")) {
+        span.innerHTML = strings[0] + elt.innerHTML + (strings[1] ? strings[1] : "");
+      } else {
+        span.innerHTML = strings[0];
+        span.setAttribute("data-before", strings[0].replace(/<[^>]+>/g, "").length);
+
+        for (let node of Array.from(elt.childNodes)) {
+          span.appendChild(node.cloneNode(true));
+        }
+
+        if (strings.length > 1) {
+          span.innerHTML += strings[1];
+          span.setAttribute("data-after", strings[1].replace(/<[^>]+>/g, "").length);
+        }
+      }
+
+      return span;
+    } // Runs behaviors recursively on the supplied element and children
+
+
+    processElement(elt) {
+      if (elt.hasAttribute("data-origname") && !elt.hasAttribute("data-processed")) {
+        let fn = this.getFallback(this.bName(elt));
+
+        if (fn) {
+          this.append(fn, elt);
+          elt.setAttribute("data-processed", "");
+        }
+      }
+
+      for (let node of Array.from(elt.childNodes)) {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          this.processElement(node);
+        }
+      }
+    } // Given a qualified name (e.g. tei:text), return the element name
+
+
+    tagName(name) {
+      if (name.includes(":"), 1) {
+        return name.replace(/:/, "-").toLowerCase();
+      }
+    }
+
+    template(str, elt) {
+      let result = str;
+
+      if (str.search(/\$(\w*)(@([a-zA-Z:]+))/)) {
+        let re = /\$(\w*)@([a-zA-Z:]+)/g;
+        let replacements;
+
+        while (replacements = re.exec(str)) {
+          if (elt.hasAttribute(replacements[2])) {
+            if (replacements[1] && this.utilities[replacements[1]]) {
+              result = result.replace(replacements[0], this.utilities[replacements[1]](elt.getAttribute(replacements[2])));
+            } else {
+              result = result.replace(replacements[0], elt.getAttribute(replacements[2]));
+            }
+          } else {
+            result = result.replace(replacements[0], "");
+          }
+        }
+      }
+
+      return result;
+    } // Define or apply behaviors for the document
+
+
+    applyBehaviors() {
+      if (window.customElements) {
+        this.define.call(this, this.els);
+      } else {
+        this.fallback.call(this, this.els);
+      }
+    }
+    /* 
+      Registers the list of elements provided with the browser.
+      Called by makeHTML5(), but can be called independently if, for example,
+      you've created Custom Elements via an XSLT transformation instead.
+    */
+
+
+    define(names) {
+      for (let name of names) {
+        try {
+          const fn = this.getHandler(this.behaviors, name);
+          window.customElements.define(this.tagName(name), class extends HTMLElement {
+            constructor() {
+              super();
+
+              if (!this.matches(":defined")) {
+                // "Upgraded" undefined elements can have attributes & children; new elements can't
+                if (fn) {
+                  fn.call(this);
+                } // We don't want to double-process elements, so add a flag
+
+
+                this.setAttribute("data-processed", "");
+              }
+            } // Process new elements when they are connected to the browser DOM
+
+
+            connectedCallback() {
+              if (!this.hasAttribute("data-processed")) {
+                if (fn) {
+                  fn.call(this);
+                }
+
+                this.setAttribute("data-processed", "");
+              }
+            }
+
+          });
+        } catch (error) {
+          // When using the same CETEIcean instance for multiple TEI files, this error becomes very common. 
+          // It's muted by default unless the debug option is set.
+          if (this.debug) {
+            console.log(this.tagName(name) + " couldn't be registered or is already registered.");
+            console.log(error);
+          }
+        }
+      }
+    }
+    /* 
+      Provides fallback functionality for browsers where Custom Elements
+      are not supported.
+    
+      Like define(), this is called by makeHTML5(), but can be called
+      independently.
+    */
+
+
+    fallback(names) {
+      for (let name of names) {
+        let fn = getFallback(this.behaviors, name);
+
+        if (fn) {
+          for (let elt of Array.from((this.dom && !this.done ? this.dom : document).getElementsByTagName(tagName(name)))) {
+            if (!elt.hasAttribute("data-processed")) {
+              append(fn, elt);
+            }
+          }
+        }
+      }
+    }
+    /**********************
+     * Utility functions  *
+     **********************/
+
+
+    static savePosition() {
+      window.sessionStorage.setItem(window.location + "-scroll", window.scrollY);
+    }
+
+    static restorePosition() {
+      if (!window.location.hash) {
+        let scroll;
+
+        if (scroll = window.sessionStorage.getItem(window.location + "-scroll")) {
+          setTimeout(function () {
+            window.scrollTo(0, scroll);
+          }, 100);
+        }
+      } else {
+        setTimeout(function () {
+          let h = document.querySelector(window.decodeURI(window.location.hash));
+
+          if (h) {
+            h.scrollIntoView();
+          }
+        }, 100);
+      }
+    }
+
+  }
+
+  try {
+    if (window) {
+      window.CETEI = CETEI;
+      window.addEventListener("beforeunload", CETEI.savePosition);
+      var ceteiceanLoad = new Event("ceteiceanload");
+      window.addEventListener("ceteiceanload", CETEI.restorePosition);
+    }
+  } catch (e) {
+    console.log(e);
+  }
+
+  return CETEI;
+
+})();

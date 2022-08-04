@@ -74,7 +74,8 @@
         });
         codemirrors.forEach(cm => {
           cm.setSize(null,200);
-          cm.on('change', ev => {
+          cm.on('change', cm => {
+            cm.getWrapperElement().classList.remove('error');
             const save = document.getElementById('commit');
             if (save.hasAttribute('disabled')) {
               save.removeAttribute('disabled');
@@ -83,6 +84,7 @@
         });
         document.querySelectorAll('textarea').forEach(elt => {
           elt.addEventListener('change', ev => {
+            elt.classList.remove('error');
             const save = document.getElementById('commit');
             if (save.hasAttribute('disabled')) {
               save.removeAttribute('disabled');
@@ -90,9 +92,9 @@
           });
         });
         if (!i) {
-          Internationalize.init(owner, repo, branch).then(i => {
+          Internationalize.init(owner, repo, branch).then(i18n => {
+            i = i18n;
             i.setup();
-            i.setLang(i.language);
           });
         } else {
           i.setLang(i.language);
@@ -115,7 +117,9 @@
           t.ct.makeHTML5(xml, function(data) {
             document.querySelector(".content").replaceChildren(data);
             if (window.location.hash) {
+              setTimeout( () => {
                 toggleEdit(window.location.hash);
+              }, '500');
             }
           }, function(ne, e) {
             if (e.hasAttribute('versionDate') && e.getAttribute('xml:lang') != 'en') {
@@ -127,7 +131,8 @@
                 ne.setAttribute('data-outofdate', '');
               }
             }
-          });
+          })
+
         });
       }
       
@@ -148,6 +153,9 @@
         margin-left: auto;
         margin-right: auto;
       }
+      .error {
+        border: 2px solid red;
+      }
     </style>
   </head>
   <body>
@@ -162,6 +170,9 @@
           </li>
           <li class="nav-item" id="user">
             <a class="nav-link i18n" href="/user.html" id="userlink" data-key="settings">Settings</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link i18n" href="doc_en.html" id="help" data-key="help">Help</a>
           </li>
           <li class="nav-item" id="save">
             <button type="submit" class="btn btn-outline-light ms-2 i18n" id="commit" disabled data-key="save">Save</button>
@@ -228,19 +239,28 @@
       document.getElementById('commit').addEventListener('click', ev => {
         ev.target.setAttribute('disabled','');
         ev.target.innerHTML = i.gloss('saving');
-        t.saveToXML(codemirrors);
+        try {
+          t.saveToXML(codemirrors);
+        } catch (e) {
+          window.alert(i.gloss('xmlerror'));
+          ev.target.innerHTML = i.gloss('save');
+          return false;
+        }
         try {
           API.commit(params.get('edit'),t.content(),`Saving ${params.get('edit')}`).then(commit => {
             if (!commit.message) {
               window.sessionStorage.setItem('head', commit.sha);
-              ev.target.innerHTML = i.gloss('save');
               ev.target.setAttribute('disabled','');
               document.getElementById('createpr').removeAttribute('disabled');
             } else {
+              window.alert(i.gloss('error'));
               console.log(commit.message);
             }
+            ev.target.innerHTML = i.gloss('save');
           });
         } catch(e) {
+          window.alert(i.gloss('error'));
+          ev.target.innerHTML = i.gloss('save');
           console.log(e);
         } finally {
           return false;
@@ -271,7 +291,7 @@
       });
       document.getElementById('signout').addEventListener('click', ev => {
         t.logOut();
-      })
+      });
     </script>
   </body>
 </html>

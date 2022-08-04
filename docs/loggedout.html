@@ -5,8 +5,9 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Signed Out</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+  <script src="js/internationalize.js" charset="utf-8"></script>
 </head>
-<body>
+<body style="display: none;">
   <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #2277bb;">
     <div class="container-fluid justify-content-start">
       <a href="https://tei-c.org" class="navbar-brand">
@@ -14,13 +15,18 @@
       </a>
       <ul class="navbar-nav d-flex w-100">
         <li class="nav-item">
-          <a class="nav-link" href="/auth/login">Sign In</a>
+          <a class="nav-link i18n" href="/auth/login" data-key="signin">Sign In</a>
         </li>
       </ul>
     </div>
   </nav>
   <div class="container-fluid px-5 py-5">
-    <p class="fs-2">You have been signed out.</p>
+    <p class="fs-2 i18n" data-key="signedout">You have been signed out.</p>
   </div>
+  <script>
+    Internationalize.init().then(i => {
+      i.setup();
+    });
+  </script>
 </body>
 </html>

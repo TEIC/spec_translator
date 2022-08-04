@@ -1,51 +1,61 @@
 import { getBlobContent } from './api.js';
-
 class Internationalize {
   
-  constructor() {
+  constructor(ceteicean) {
     this.languages = ['de','en','es','it','ja','ko','zh'];
+    this.replacements = ['tei:ref'];
+    this.ct = ceteicean;
   }
 
-  static async init(owner, repo, branch) {
+  static async init(owner, repo, branch, ceteicean) {
+    let content;
     if (owner) {
-      owner = owner;
-      repo = repo;
-      branch = branch;
+      content = await getBlobContent(owner, repo, branch, 'I18N/spec_translator.xml');
     } else {
-      owner = 'TEIC';
-      repo = 'TEI';
-      branch = 'dev';
+      content = await (await fetch('https://raw.githubusercontent.com/TEIC/TEI/dev/I18N/spec_translator.xml')).text();
     }
-    const content = await getBlobContent(owner, repo, branch, 'I18N/spec_translator.xml');
-    const result = new Internationalize();
+    const result = new Internationalize(ceteicean);
     result.dom = ( new DOMParser() ).parseFromString(content, "text/xml");
     result.glossary = {};
-    let items = result.dom.evaluate('//tei:item', result.dom, result.resolveNS, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
-    let item;
-    while (item = items.iterateNext()) {
-      let label = result.dom.evaluate('tei:label', item, result.resolveNS, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.innerHTML;
+    if (result.ct) {
+      result.ct.define(result.replacements);
+    }
+    let items = result.dom.querySelectorAll('item');
+    items.forEach(item => {
+      let label = item.querySelector('label').innerHTML;
       let glosses = item.querySelectorAll('gloss');
       let descs = item.querySelectorAll('desc');
       let notes = item.querySelectorAll('note');
       result.glossary[label] = {};
       for (let gloss of glosses) {
-        result.glossary[label][gloss.getAttribute('xml:lang')] = {'gloss': gloss.innerHTML};
+        result.glossary[label][gloss.getAttribute('xml:lang')] = {'gloss': result.fixTEI(gloss.innerHTML)};
       }
       for (let desc of descs) {
         if (result.glossary[label][desc.getAttribute('xml:lang')]) {
-          result.glossary[label][desc.getAttribute('xml:lang')]['desc'] = desc.innerHTML;
+          result.glossary[label][desc.getAttribute('xml:lang')]['desc'] = result.fixTEI(desc.innerHTML);
         } else {
-          result.glossary[label][desc.getAttribute('xml:lang')]['desc'] = {'desc': desc.innerHTML};
+          result.glossary[label][desc.getAttribute('xml:lang')]['desc'] = {'desc': result.fixTEI(desc.innerHTML)};
         }
       }
       for (let note of notes) {
-        result.glossary[label][note.getAttribute('xml:lang')]['note'] = note.innerHTML;
+        result.glossary[label][note.getAttribute('xml:lang')]['note'] = result.fixTEI(note.innerHTML);
       }
-    }
+    });
     return result;
   }
 
-  gloss(term, lang, params) {
+  fixTEI(str) {
+    let result = str.replace(/xmlns:?\w*="[^"]+"/g, '');
+    this.replacements.forEach(replacement => {
+      let r = replacement.replace(/tei:/,'');
+      result = result.replace(`<${r}`, `<tei-${r.toLowerCase()}`);
+      result = result.replace(`</${r}`, `</tei-${r.toLowerCase()}`);
+      result = result.replace(/<((?!\/)[^>]+)>/, '<$1 data-origname="' + r + '">');
+    });
+    return result;
+  }
+
+  gloss(term, lang, ...params) {
     if (!lang) {
       lang = this.language;
     }
@@ -112,6 +122,10 @@ class Internationalize {
       }
       if (c?.desc) {
         elt.setAttribute('title', c.desc);
+      }
+      if (elt.hasAttribute('href') && elt.getAttribute('href').match(/^\w+_\w\w\.html$/)) {
+        let href = elt.getAttribute('href');
+        elt.setAttribute('href', href.replace(/_\w\w/, `_${lang}`));  
       }
     });
     this.language = lang;

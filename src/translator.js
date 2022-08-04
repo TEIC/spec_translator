@@ -4,7 +4,7 @@ class Translator {
 
   constructor(options = {}) {
     if (!options.noCETEI) {
-      this.ct = new CETEI();
+      this.ct = new CETEI({debug: true});
       this.ct.addBehaviors(Translator.behaviors);
     }
   }
@@ -103,9 +103,22 @@ class Translator {
     return doc;
   }
   saveToXML(codemirrors) {
-    codemirrors.forEach(cm => cm.save());
-    document.querySelectorAll("textarea.translate").forEach(text => {
-      this.updateSource(this.ct.XML_dom, text);
+    codemirrors.forEach(cm => {
+      cm.save();
+      try {
+        this.updateSource(this.ct.XML_dom, cm.getTextArea());
+      } catch (error) {
+        cm.getWrapperElement().classList.add('error');
+        throw error;
+      }      
+    });
+    document.querySelectorAll("textarea.translate.plain").forEach(text => {
+      try {
+        this.updateSource(this.ct.XML_dom, text);
+      } catch (error) {
+        text.classList.add('error');
+        throw error;
+      }
     });
   }
   content() {
@@ -247,7 +260,7 @@ class Translator {
       "gloss": [
         ["cetei-translate>tei-gloss", function(elt){
           let result = document.createElement("form");
-          result.innerHTML = "<textarea class=\"translate\">" + this.serialize(elt, true).replace(/^( |\t)+/gm, "") + "</textarea>";
+          result.innerHTML = "<textarea class=\"plain translate\">" + this.serialize(elt, true).replace(/^( |\t)+/gm, "") + "</textarea>";
           return result;
         }],
         ["tei-item>tei-gloss[lang=en]", ["<span class=\"translatable\">", "</span>"]],

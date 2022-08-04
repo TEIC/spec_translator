@@ -75,7 +75,10 @@
           document.getElementById('createFork').setAttribute('disabled', '');
           API.listWorkflows().then(result => {
             if (result.total_count == 0) {
-              document.getElementById('enableactions').toggleAttribute('hidden');
+              with (document.getElementById('enableactions')) {
+                innerHTML = i.gloss('workflows', i.language, owner);
+                toggleAttribute('hidden');
+              }
             }
           })
           API.mergeUpstream(owner, repo); // Need some message if this fails
@@ -118,6 +121,9 @@
         <li class="nav-item">
           <a class="nav-link i18n" href="/" data-key="browse">Browse</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link i18n" href="doc_en.html" id="help" data-key="help">Help</a>
+        </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle i18n" href="#" data-toggle="dropdown" data-key="language" aria-haspopup="true" aria-expanded="false" id="menulang">Language</a>
           <div class="dropdown-menu" aria-labelledby="menulang">
@@ -149,8 +155,7 @@
         <div class="col-auto"><button type="submit" class="btn btn-primary i18n" id="createFork" disabled data-key="createfork">Create a Fork</button></div>
       </form>
     </li>
-    <li class="container" hidden id="enableactions">
-      <p class="i18n" data-key="workflows">Go to <a href="https://github.com/hcayless/TEI/actions">your GitHub repo</a> and enable workflows.</p>
+    <li class="container i18n" hidden id="enableactions" data-key="workflows">
     </li>
     <li class="container">
       <p class="i18n" data-key="choosebranch">Choose or create a branch to save to:</p>
@@ -174,12 +179,12 @@
   </ol>
   
   <script>
-    const t = new Translator({noCETEI: true});
+    const t = new Translator();
     if (!t.loggedIn()) {
       window.location = '/auth/login';
     }
     let i;
-    Internationalize.init('TEIC', 'TEI', 'dev').then(internationalize => {
+    Internationalize.init('TEIC', 'TEI', 'dev', t.ct).then(internationalize => {
       i = internationalize;
       i.setup();
       // Set up owner info
@@ -292,7 +297,7 @@
                   document.getElementById('browse').classList.remove('disabled');
                   rememberPage();
                 } else {
-                  document.getElementById('branchtext').innerHTML = i.gloss('noupdate', i.language, [owner, repo, data.name]);
+                  document.getElementById('branchtext').innerHTML = i.gloss('noupdate', i.language, owner, repo, data.name);
                 }
               });
               document.getElementById('createBranch').setAttribute('disabled','');
