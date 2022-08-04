@@ -89,7 +89,8 @@ class Translator {
         return doc;
       }
       // No-op if text is the same as the en element and the textarea has a code class
-      if (elt.classList.contains('code') && this.normalize(enElt.innerHTML) != this.normalize(elt.value)) {
+      if ((elt.classList.contains('code') && this.normalize(enElt.innerHTML) != this.normalize(elt.value)) 
+          || elt.classList.contains('plain')) {
         // match indent level of the translated element, if any
         if (enElt?.previousSibling.nodeType === Node.TEXT_NODE) {
           let ws = enElt.previousSibling.nodeValue.replace(/.*(\s+)$/, "$1");
